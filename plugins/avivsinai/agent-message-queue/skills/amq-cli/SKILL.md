@@ -1,6 +1,6 @@
 ---
 name: amq-cli
-version: 0.65.3 # x-release-please-version
+version: 0.71.0 # x-release-please-version
 description: >-
   Coordinate agents via the AMQ CLI for file-based inter-agent messaging. Use
   this skill whenever you need to send messages to another agent (codex, claude,
@@ -141,6 +141,8 @@ Before diving in, match the task to the right workflow — this avoids wasted ef
 |-----------|-----------|
 | **"spec", "design with", "collaborative spec"** | Use `/amq-spec` instead — it has structured phase-by-phase guidance for parallel-research workflows. |
 | **Send a message, review request, question** | Use `amq send` (see Messaging below) |
+| **Buzz / ACP / `amq-acp`** | Companion `amq-acp` queues to `AMQ_ACP_TO`; pool workers must not drain. Chat must not pass `--root`, recipients, or argv. `[Context]` is not routing. See [`cmd/amq-acp/README.md`](../../cmd/amq-acp/README.md). |
+| **Two-host / Grok computer / `amq-bridge`** | Companion `amq-bridge`, never a foreign `--root`. See Two-host fleets below. |
 | **Swarm / agent teams** | Read [references/swarm-mode.md](references/swarm-mode.md), then use `amq swarm` |
 | **Received message with labels `workflow:spec`** | Follow the spec skill protocol: do independent research first, then engage on the `spec/<topic>` thread — don't skip straight to implementation. |
 
@@ -177,6 +179,13 @@ For Cursor, setup uses the current `agent` command when it is on `PATH`; if it
 is absent, the preview explains that setup is falling back to legacy
 `cursor-agent`.
 
+Grok Build is supported by the managed launch adapter. It mints an exact
+`--session-id` from the AMQ launch nonce and resumes only with the stored
+`--resume <UUID>`; `--continue`, `--always-approve`, and `--yolo` are rejected
+from committed launch arguments. Grok tool policy uses its canonical
+`--tools` and `--disallowed-tools` flags; do not translate those values through
+Claude's `--allowedTools` grammar.
+
 Put provider flags in the committed `.amq/launch.json` `command` arrays. The
 launcher validates them and includes them in the semantic trust digest. The
 first semantic plan, and each plan change, needs an interactive trust
@@ -193,6 +202,9 @@ one per terminal; do not reconstruct them from generic `coop exec` examples.
 Managed `tmux`, `cmux`, and `ghostty` backends run the plan in-app instead.
 
 Without `--session` or `--root`, `coop exec` uses the declared `default_session` from `.amq/launch.json`, or `collab` when none is declared. Creating a missing session or root from `coop exec` is deprecated and prints `warning: creating a missing session or root from coop exec is deprecated; use 'amq session create <name>' or 'amq init --root'. The next major release makes this exit 3.`
+
+Add `--named` to stamp `AM_ME` onto the CLI conversation title (`claude`/`pi`
+get `--name`; Codex and Cursor `agent` get a best-effort `/rename` on Unix).
 
 Add `--no-gitignore` when `coop exec` should auto-initialize the project without changing `.gitignore`.
 
@@ -359,9 +371,10 @@ instead of a raw ENOENT.
 Current resume-eligible `coop exec` wakes automatically observe their stable
 AMQ launch symlink and adopt a strictly newer semantic version at a fully
 quiescent boundary, preserving PID, terminal ownership, and unread messages.
-Use `wake check --json --json-schema=2` to inspect `self_upgrade`; a refused
-candidate is attempted at most once until manual restart, lock replacement, or
-a new candidate. `--no-self-upgrade` and `AMQ_WAKE_NO_SELF_UPGRADE=1` disable
+Use `wake check --json --json-schema=2` to inspect `self_upgrade`; a failed
+upgrade candidate is attempted at most once per candidate within one wake
+generation, bounded to the 8 most recent distinct candidates, and a new
+generation resets that refusal memory. `--no-self-upgrade` and `AMQ_WAKE_NO_SELF_UPGRADE=1` disable
 this only for the launched wake. Ownerless, keepalive, repair, destructive
 interrupt, arbitrary-inject, and pinned-path wakes remain manual.
 
@@ -464,6 +477,25 @@ When you receive a message where `from` matches your own handle (e.g., `from: "c
 ### AM_ROOT scoping after cross-project sends
 
 After sending a cross-project message (via `--project`), your `AM_ROOT` still points to YOUR project. To send to your own partner (same project), use plain `amq send --to codex` — do NOT use `--project`. The `--project` flag is ONLY for sending to agents in OTHER projects.
+
+## Two-host fleets
+
+A different machine is a different AMQ host, not a `--project` and not a
+foreign `--root`. Each host has its own handles; `claude` on G is not `claude`
+on the Mac. Cross-host mail is companion `amq-bridge` only.
+
+- Address receiver-owned aliases `<host>/<agent>`.
+- The destination host applies the signed envelope into its own Maildir.
+- The proven hop is `amq-bridge apply-file` (operator-moved drop file, no
+  public locker). Replies keep the inbound opaque thread id.
+- Bot chat must invoke `scripts/amq-bridge-bot-enqueue.sh` with argv exactly
+  `--dest-alias host/agent`; it reads `AMQ_BRIDGE_ENQUEUE_CONFIG`. Prompt text
+  must not pass `--root`, `--rendezvous`, `--me`, or `--spool`.
+- HTTPS courier remains for an operator-provided rendezvous. AMQ does not
+  ship a hosted relay. Do not treat a missing rendezvous as a reason to
+  remote-drain or copy Maildirs.
+
+See [amq-bridge](https://github.com/avivsinai/agent-message-queue/blob/main/cmd/amq-bridge/README.md).
 
 ## Decision Threads
 
@@ -632,4 +664,6 @@ For detailed protocols, read the reference file FIRST, then follow its instructi
 - [references/integrations.md](references/integrations.md) — Symphony + Kanban integration commands, global root fallback, ops checks
 - [references/message-format.md](references/message-format.md) — Message format: frontmatter schema, field reference
 - [references/cross-project.md](references/cross-project.md) — Cross-project routing: peer config, addressing, decision threads
+- [amq-bridge](https://github.com/avivsinai/agent-message-queue/blob/main/cmd/amq-bridge/README.md) — Two-host courier: apply-file, identity, HTTPS rendezvous
+- [amq-acp](https://github.com/avivsinai/agent-message-queue/blob/main/cmd/amq-acp/README.md) — ACP v1 stdio companion and Buzz BYOH JSON
 - [references/review-loop.md](references/review-loop.md) — Token-efficient review cycles: delegate multi-round reviews to background agents

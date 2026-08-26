@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "name": "awesome-codex-plugins",
   "version": "1.0.0",
-  "last_updated": "2026-08-20",
+  "last_updated": "2026-08-26",
   "total": 196,
   "categories": [
     "Development & Workflow",
@@ -338,16 +338,6 @@
       "category": "Development & Workflow",
       "source": "awesome-codex-plugins",
       "install_url": "https://raw.githubusercontent.com/yimwoo/codex-agenteam/HEAD/.codex-plugin/plugin.json"
-    },
-    {
-      "name": "Codex Full-Stack Workflow",
-      "url": "https://github.com/kevin592/codex-full-stack-workflow",
-      "owner": "kevin592",
-      "repo": "codex-full-stack-workflow",
-      "description": "Turns rough product requests into staged, reviewable full-stack delivery with persistent requirements, change control, visual evidence, and completion gates.",
-      "category": "Development & Workflow",
-      "source": "awesome-codex-plugins",
-      "install_url": "https://raw.githubusercontent.com/kevin592/codex-full-stack-workflow/HEAD/.codex-plugin/plugin.json"
     },
     {
       "name": "Codex How To",
@@ -1698,6 +1688,16 @@
       "category": "Tools & Integrations",
       "source": "awesome-codex-plugins",
       "install_url": "https://raw.githubusercontent.com/anzy-renlab-ai/pronounce/HEAD/.codex-plugin/plugin.json"
+    },
+    {
+      "name": "Qatom",
+      "url": "https://github.com/TODAQmicro/qatom-skill",
+      "owner": "TODAQmicro",
+      "repo": "qatom-skill",
+      "description": "An MCP agentic commerce market. One-step register your MCP server. Build your API & services catalog. Sell with your own merchant agent. Customers, agents, and consumers discover and purchase from your catalog. Control your own payments, auditable records, payouts to supply chain and bank.",
+      "category": "Tools & Integrations",
+      "source": "awesome-codex-plugins",
+      "install_url": "https://raw.githubusercontent.com/TODAQmicro/qatom-skill/HEAD/.codex-plugin/plugin.json"
     },
     {
       "name": "Read Image",

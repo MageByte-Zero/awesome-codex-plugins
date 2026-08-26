@@ -5,13 +5,19 @@ remote URL and complete OAuth 2.1 in the browser. API-key fallback is
 client-specific. ChatGPT custom apps require OAuth and cannot present custom
 API keys.
 
+Xquik receives authenticated tool requests through its remote MCP service.
+Review the OAuth consent screen and tool list before connecting.
+Grant only the access needed for the task.
+An API key grants its documented access until revoked.
+
 | Setting | Value |
 |---------|-------|
 | Protocol | Streamable HTTP |
 | Endpoint | `https://xquik.com/mcp` |
 | Authentication | OAuth 2.1 discovery; API key fallback |
-| Hosted MCP version | `2.6.0` |
-| Skill bundle version | `2.6.5` |
+| Skill bundle version | `2.6.7` |
+
+Hosted MCP exposes `docs`, `search`, and `execute`.
 
 Current clients negotiate MCP `2026-07-28` through `server/discover`.
 Use a current MCP SDK. It adds request `_meta` and protocol headers.
@@ -78,14 +84,12 @@ Run `/mcp`, select `xquik`, then authenticate.
 3. Enter `https://xquik.com/mcp`, choose OAuth, then select **Scan tools**.
 4. Complete Xquik authorization and select **Create**.
 
-ChatGPT cannot present a custom API key. Business and Enterprise/Edu
-workspaces support full MCP, including write tools. Pro supports read and fetch
-tools only. Custom MCP apps are web-only.
+ChatGPT uses OAuth here. It cannot present a custom API key. Check your plan
+and workspace controls before setup.
 
 ### Codex CLI
 
-Use Codex CLI 0.147.0 or later. These releases preserve and validate the RFC
-9207 `iss` callback value. Run:
+Use a current Codex CLI release. Run:
 
 ```bash
 codex mcp add xquik --url https://xquik.com/mcp
@@ -95,16 +99,14 @@ codex mcp list
 
 If an older release reports
 `Authorization server response missing required issuer: expected https://xquik.com`,
-upgrade to 0.147.0 or later. If an upgrade is unavailable, use the API-key
-fallback below. Xquik already returns the required issuer. Follow the
+update Codex. If an update is unavailable, use the API-key fallback below. Follow the
 [Xquik troubleshooting guide](https://docs.xquik.com/guides/troubleshooting#codex-oauth-issuer-validation-error).
 
 ### Codex Desktop
 
 Open **Settings > MCP servers**. Add `https://xquik.com/mcp` as Streamable HTTP,
-select **Authenticate**, then restart. If the app bundles a Codex release older
-than 0.147.0 and shows the issuer error above, use the shared `config.toml`
-fallback below.
+select **Authenticate**, then restart. Use the shared `config.toml` fallback
+below only when OAuth shows the issuer error.
 
 ### API-key fallback for older Codex releases
 
@@ -112,7 +114,7 @@ Load `XQUIK_API_KEY` from your password manager or operating-system secret
 store. Do not type the key into a shell command, save it in shell history, or
 put it in `config.toml`.
 
-Use this `~/.codex/config.toml` entry:
+In Codex Settings, add this server entry to the shared configuration:
 
 ```toml
 [mcp_servers.xquik]
@@ -123,34 +125,28 @@ bearer_token_env_var = "XQUIK_API_KEY"
 Restart Codex, then run `codex mcp list`. Do not run `codex mcp login xquik`
 while using the API-key configuration.
 
-After upgrading to 0.147.0 or later, remove `bearer_token_env_var`. Leave only
+After updating Codex, remove `bearer_token_env_var`. Leave only
 the MCP URL, then run `codex mcp login xquik`.
 
 ### OpenAI Agents SDK
 
-Use the OpenAI Agents SDK for programmatic access. When the runtime cannot open
-OAuth, pass an API key into the connection function from its secret store:
+Use the OpenAI Agents SDK for programmatic client setup. When the runtime cannot
+open OAuth, pass an API key into the configuration function from its secret
+store. Only the MCP server setting is returned. It makes no request. Integration
+stays outside this Skill.
 
 ```python
-from agents import Agent, Runner
 from agents.mcp import MCPServerStreamableHttp
 
 
-async def run_xquik(api_key: str) -> str:
-    async with MCPServerStreamableHttp(
+def build_xquik_server(api_key: str) -> MCPServerStreamableHttp:
+    return MCPServerStreamableHttp(
         name="Xquik",
         params={
             "url": "https://xquik.com/mcp",
             "headers": {"Authorization": f"Bearer {api_key}"},
         },
-    ) as server:
-        agent = Agent(
-            name="Xquik agent",
-            instructions="Use Xquik to inspect the API catalog.",
-            mcp_servers=[server],
-        )
-        result = await Runner.run(agent, "List the endpoint categories.")
-        return str(result.final_output)
+    )
 ```
 
 ## Editor and terminal clients
@@ -237,22 +233,6 @@ Add the remote server:
 gemini mcp add --transport http xquik https://xquik.com/mcp
 ```
 
-Or add it to `~/.gemini/settings.json` for user scope or
-`.gemini/settings.json` for project scope:
-
-```json
-{
-      "mcpServers": {
-        "xquik": {
-          "type": "http",
-          "url": "https://xquik.com/mcp"
-        }
-      }
-}
-```
-
-Older Gemini CLI builds also accept the legacy `httpUrl` field.
-
 Run `/mcp auth xquik` to complete OAuth.
 
 ### GitHub Copilot CLI
@@ -277,30 +257,35 @@ above.
 Client schemas and environment syntax differ, so do not copy one header
 object between clients or place a literal key in a configuration file.
 
-Full account keys expose 120 catalog routes. Of these, 119 support JSON or text.
-Active guest `paid_reads` keys expose 33 eligible GET routes.
+Each key exposes its allowed catalog. Active guest `paid_reads` keys expose
+eligible read routes only.
 
 ## MCP server architecture
 
-Hosted MCP v2.6.0 exposes 120 catalog routes through 2 structured API tools.
-Of these, 119 support JSON or text. Binary support downloads use REST.
+Hosted MCP exposes 3 structured tools. Binary support downloads use REST.
 
 | Tool | Description | Usage |
 |------|-------------|------|
-| `explore` | Search the API endpoint catalog (read-only, no network calls) | Included |
-| `xquik` | Send confirmed Xquik API requests | Varies by endpoint |
+| `docs` | Search Xquik documentation | Included |
+| `search` | Search the credential-scoped endpoint catalog | Included |
+| `execute` | Send confirmed Xquik API requests | Varies by endpoint |
 
-`explore` searches the credential-scoped catalog. `xquik` sends authenticated
-operations with normalized snake_case responses. Authentication is injected, so
-tool code must never include credentials.
+`search` reads the credential-scoped catalog without an API request. `execute`
+sends authenticated operations and returns the REST response object. Original field names
+remain unchanged, including `safeToRetry`, `allowed`, `monitorId`, and
+`nextCursor`. Authentication is injected, so tool code must never include
+credentials.
 
-Hosted MCP v2.6.0 catalogs 120 of 128 documented REST operations. These 8 credential,
-checkout, or guest-wallet operations remain direct REST or dashboard workflows:
+Credential, checkout, and guest-wallet operations remain direct REST or
+dashboard workflows:
 
 - API key creation, listing, and revocation
 - Saved-payment top-up
 - Account top-up redirect
 - Guest wallet creation, status polling, and top-up
+
+These flows stay outside this Skill. Never create keys or wallets, start
+checkout, or change credits. Direct the user to the dashboard.
 
 Private reads, writes, monitors, webhooks, persistent resources, and metered bulk
 jobs require the user's explicit approval. Plan and credit changes stay
@@ -308,16 +293,20 @@ dashboard-only.
 
 ## After setup
 
-Use `explore` before unfamiliar operations. Use `xquik` only for the narrowest
-approved request.
+This Skill stops at setup and request planning. It never invokes `docs`,
+`search`, or `execute`. The user runs calls through their MCP client.
 
-| Workflow | Steps |
-|----------|-------|
-| Search public posts | `explore` for the search route, then `xquik` with a bounded limit |
-| Set up alerts | Confirm target and ongoing usage, then create a monitor and webhook |
-| Run a giveaway | Confirm the source post, rules, and winner count, then create the draw |
-| Bulk extraction | Estimate, confirm the bound, create the job, then poll its status |
-| Publish a post | Confirm exact text and account, then execute the write |
+For an unfamiliar operation, plan a `search` lookup first. Then show the
+narrowest `execute` request. Require confirmation when the request is private,
+metered, persistent, or state-changing.
+
+| Workflow plan | User-run steps |
+|---------------|----------------|
+| Search X posts | Run `search` for the route. Then run a bounded `execute` read. |
+| Set up alerts | Confirm target and usage. Then create the monitor and webhook. |
+| Run a giveaway | Confirm the source, rules, and winner count. Then create the draw. |
+| Bulk extraction | Run the estimate. Confirm the bound. Then create and poll the job. |
+| Publish a post | Confirm exact text and account. Then run the write in the MCP client. |
 
 Handle failures from structured error fields:
 
