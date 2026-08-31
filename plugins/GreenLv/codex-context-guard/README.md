@@ -11,15 +11,29 @@ Context Guard keeps important requirements from disappearing during a long Codex
 
 It works beside Codex Plan, Goal, memories, subagents, worktrees, and the transcript; it does not replace or control them.
 
-> Release status: `0.8.8` is the latest published release. See the [changelog](CHANGELOG.md), [compatibility matrix](docs/COMPATIBILITY.md), and [local acceptance record](docs/LOCAL_ACCEPTANCE.md).
+> Release status: `0.9.4` is the latest published release. See the [changelog](CHANGELOG.md), [compatibility matrix](docs/COMPATIBILITY.md), and [local acceptance record](docs/LOCAL_ACCEPTANCE.md).
+
+The current checkout contains the `0.9.4` release. The published `0.8.12`
+release and consumed `0.9.0`/`0.9.1`/`0.9.2`/`0.9.3` candidate caches remain
+immutable.
 
 ## Install
 
 Requirements: Python 3.10 or newer, Codex CLI `0.146.0` or newer as the tested minimum, and a Codex surface that loads plugins and lifecycle Hooks.
 
-Version 0.8.8 selects a supported Python interpreter for Hook execution instead
-of assuming the first `python3` on `PATH` is new enough. This matters on macOS
-hosts where `/usr/bin/python3` can still be 3.9.
+Current Hook compatibility includes two safeguards: Context Guard selects a
+supported Python interpreter instead of assuming the first `python3` on `PATH`
+is new enough, and falls back to the newest surviving managed cache tree when a
+host prunes historical versions. If no supported interpreter or tree remains,
+it fails closed with an actionable reinstall hint; see the [compatibility
+matrix](docs/COMPATIBILITY.md) for version-specific details.
+
+Version 0.9.4 makes an authenticated full-coverage checkpoint the only
+authority that can mark a task complete and decodes Hook stdin as UTF-8
+explicitly, preserving non-ASCII prompt and reply text before journaling.
+Natural-language completion wording remains diagnostic only. Detailed Windows
+permission and platform-acceptance evidence is in the [compatibility
+matrix](docs/COMPATIBILITY.md) and [local acceptance record](docs/LOCAL_ACCEPTANCE.md).
 
 ```shell
 git clone https://github.com/GreenLv/codex-context-guard.git
@@ -63,7 +77,7 @@ For a recovery check, use it on a non-trivial synthetic task, run `/compact`, an
 - Ambiguous output remains `unknown`; damaged or unverifiable private state fails closed.
 - Exports are explicit and redacted. Image bytes, credentials, and raw transcript content are not copied into the requirement ledger.
 
-Proof protocol 1.0.0 checks only obligations that follow clearly from the user's request: for example, whether evidence belongs to the named file or URL, whether an edited image was inspected, or whether every explicitly listed object was covered. Cases without that kind of deterministic check use the earlier completion behavior (internally named `legacy_fallback`) rather than pretending to understand arbitrary semantics or pixels. Stop protocol 1.1.0 keeps completion control turn-bound: an unfinished disposition is advisory only and cannot force a new turn.
+Proof protocol 1.0.0 checks only obligations that follow clearly from the user's request: for example, whether evidence belongs to the named file or URL, whether an edited image was inspected, or whether every explicitly listed object was covered. Cases without that kind of deterministic check use the earlier completion behavior (internally named `legacy_fallback`) rather than pretending to understand arbitrary semantics or pixels. Stop protocol 2.0.0 keeps completion checkpoint-authoritative and turn-bound: natural-language completion classification is diagnostic only, and an unfinished disposition is advisory only and cannot force a new turn.
 
 ## How 0.8.3 separates different sources
 

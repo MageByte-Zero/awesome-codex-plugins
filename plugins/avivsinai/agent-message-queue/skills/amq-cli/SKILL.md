@@ -1,6 +1,6 @@
 ---
 name: amq-cli
-version: 0.71.0 # x-release-please-version
+version: 0.76.0 # x-release-please-version
 description: >-
   Coordinate agents via the AMQ CLI for file-based inter-agent messaging. Use
   this skill whenever you need to send messages to another agent (codex, claude,
@@ -31,6 +31,20 @@ Requires `amq` binary in PATH. Install:
 ```bash
 curl -fsSL https://raw.githubusercontent.com/avivsinai/agent-message-queue/main/scripts/install.sh | bash
 ```
+
+### Native Windows submitted injection
+
+The native Windows core queue works, and the separately published
+`amq-keepalive.exe` can submit to an exact live Codex or Claude Code session:
+
+```powershell
+amq-keepalive.exe inject codex-queue "codex-queue:thread:$env:CODEX_THREAD_ID" "check the AMQ inbox"
+amq-keepalive.exe inject claude-print "claude-print:session:<uuid>" "check the AMQ inbox"
+```
+
+Do not translate this into `amq wake` or `coop exec`: native Windows does not
+provide their Unix terminal lifecycle. `codex-queue` also requires an active
+writer for the exact thread; an idle lock file is not sufficient.
 
 ## Environment Rules
 
@@ -131,7 +145,10 @@ worktree's machine-local `.amqrc`, or remove the project-relative `.amqrc` and
 set `AMQ_GLOBAL_ROOT` to one absolute base. Keep the relative default when
 per-worktree isolation is intended. A Git worktree with neither local
 configuration nor a local queue fails closed instead of inheriting
-`~/.amqrc`; this prevents accidental cross-project delivery.
+`~/.amqrc`; this prevents accidental cross-project delivery. A nested or
+linked worktree under a parent that already has `.amqrc` is the same
+fail-closed ceiling: it uses its own config or refuses, and does not adopt
+the parent live queue.
 
 ## Task Routing
 
@@ -203,8 +220,17 @@ Managed `tmux`, `cmux`, and `ghostty` backends run the plan in-app instead.
 
 Without `--session` or `--root`, `coop exec` uses the declared `default_session` from `.amq/launch.json`, or `collab` when none is declared. Creating a missing session or root from `coop exec` is deprecated and prints `warning: creating a missing session or root from coop exec is deprecated; use 'amq session create <name>' or 'amq init --root'. The next major release makes this exit 3.`
 
-Add `--named` to stamp `AM_ME` onto the CLI conversation title (`claude`/`pi`
-get `--name`; Codex and Cursor `agent` get a best-effort `/rename` on Unix).
+Direct `coop exec` names the provider session by default as
+`<session>/<handle>`, or as `<handle>` for a sessionless root. Claude and Pi
+get `--name`; Codex and Cursor `agent` get a best-effort TUI rename after the
+new session store is verified. Codex resumes by name, for example `codex resume
+session1/codex`. Cursor `agent` resumes through its picker only; resume-by-name
+is unproven. Existing names and `--resume`, `-r`, `--continue`, or `-c` flags
+are preserved, including `codex resume` and `agent --resume`. Disable naming
+with `--named=false`, `AMQ_COOP_NAMED=0`, or
+`"named": false` in `.amq/launch.json`. Managed launches keep naming disabled
+until their provider-name contract is available; explicit `--named` remains
+refused there.
 
 Add `--no-gitignore` when `coop exec` should auto-initialize the project without changing `.gitignore`.
 

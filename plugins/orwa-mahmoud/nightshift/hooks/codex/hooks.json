@@ -1,0 +1,28 @@
+{
+  "description": "nightshift guards for Codex: the PreToolUse hardhat and the Stop clock-out gate.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${PLUGIN_ROOT}/hooks/codex/hardhat.sh\"",
+            "commandWindows": "powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File \"%PLUGIN_ROOT%\\hooks\\windows\\hardhat.ps1\" -HostName codex"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${PLUGIN_ROOT}/hooks/codex/clock-out-gate.sh\"",
+            "commandWindows": "powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File \"%PLUGIN_ROOT%\\hooks\\windows\\clock-out-gate.ps1\" -HostName codex"
+          }
+        ]
+      }
+    ]
+  }
+}

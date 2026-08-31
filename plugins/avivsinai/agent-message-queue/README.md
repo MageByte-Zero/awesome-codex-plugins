@@ -183,6 +183,15 @@ Homebrew:
 brew upgrade amq
 ```
 
+`amq upgrade` checks the raw and resolved executable paths against every
+evidenced or executable-derived Homebrew prefix and delegates to the matched
+Homebrew executable instead of overwriting the Cellar; pass `amq upgrade -y`
+to run the delegate without an AMQ prompt. The package manager may still
+prompt. Scoop installs on Windows are scoped as user (`$SCOOP` or the default
+`%USERPROFILE%\scoop`) or global (`$SCOOP_GLOBAL` or `C:\ProgramData\scoop`);
+the matched `scoop` executable receives `scoop update amq` for user scope or
+`scoop update -g amq` for global scope.
+
 Retire live wakes started by the previous Cellar binary first. If a leftover
 lock's image directory is gone, `wake check` reports `binary_dir_gone`;
 remove it with `amq doctor --ops --fix-wake-locks`. See
@@ -192,17 +201,65 @@ GitHub Actions `verify-brew-release` confirms a published tag installs from
 `avivsinai/tap/amq` and that `amq --version` matches that tag. It does not
 replace `brew upgrade` on an operator machine.
 
-Install-script or other manual binary installs:
+Install-script or other manual binary installs outside an evidenced Homebrew
+prefix keep the direct download and atomic-replace path:
 
 ```bash
 amq upgrade
 ```
 
+Upgrade the companion binaries (`amq-keepalive`, `amq-bridge`, `amq-acp`)
+that sit in the raw or resolved executable directory of a direct-install
+`amq`, or in `~/.local/bin`, from the same release tag, with checksum
+verification:
+
+```bash
+amq upgrade --all
+```
+
+The command plans one verified target per companion, unique across all
+companions, before any companion replacement. It verifies each target's Go
+build identity. Missing companions are skipped with a line; cross-companion
+aliases, wrong builds, and multiple distinct targets refuse the upgrade and
+give a repair action. Same-name symlink aliases to one canonical target are
+accepted; same-name hardlinks refuse. A
+running `amq-keepalive` is never killed: the atomic rename swaps the path
+while the running process keeps the old image.
+When the upgraded path is the supervisor's path, `amq upgrade --all` notes
+that self-upgrade can pick up a strictly newer image on its next supervise pass. A
+supervisor started with `--no-self-upgrade` must be restarted through its
+service manager; on macOS use `amq-keepalive install-launchd`, and on Linux
+restart the service unit, for example
+`systemctl --user restart amq-keepalive.service`. Companions are
+direct-installed only; the
+Homebrew formula and Scoop manifest ship `amq` itself, so `--all` under a
+package-managed install is a no-op with an explanatory line. Companion links
+are revalidated by their primary path; a secondary same-name alias repointed
+during download is not detected.
+
+`AMQ_CACHE_DIR` overrides the update cache location used by `amq upgrade` and
+the background update notifier. When unset, the platform cache
+(`~/Library/Caches` on macOS, `XDG_CACHE_HOME` or `~/.cache` on Linux and
+other Unix systems, and the user's Local AppData cache on Windows) is used.
+`internal/update.DefaultCachePath` is the sole authority for the platform
+update-cache path. For the direct-upgrade cache-writing path, a set override
+must resolve to an absolute path; AMQ fails before replacement rather than
+silently falling back to the platform cache. The version cache is refreshed
+after an authoritative direct check confirms the latest version (already
+current, or after a successful immediate replacement). A later companion
+failure does not change that result. A scheduled replacement is reflected when
+the next successful check refreshes the cache (best-effort).
+
+On Windows, `amq upgrade --all` upgrades a directly installed
+`amq-keepalive.exe`; it skips `amq-bridge` and `amq-acp`, which are not
+published for Windows, then continues with the core upgrade.
+
 ### Keepalive companion
 
 `amq-keepalive` is developed and released from this repository alongside AMQ.
 `make build` produces both binaries, and each AMQ release includes a separate
-`amq-keepalive` archive stamped with the same release version. Verify a build
+`amq-keepalive` archive stamped with the same release version, including a
+native Windows ZIP. Verify a build
 with any equivalent form:
 
 ```bash
@@ -286,6 +343,17 @@ can validate and include them in its semantic trust digest. For example:
 Dangerous permission-bypass flags are not valid committed arguments. Keep
 them in an operator-controlled direct `coop exec` invocation when that
 low-level path is intentionally required.
+
+Direct `coop exec` names the provider session by default as
+`<session>/<handle>` (or `<handle>` for a sessionless root). Claude and Pi
+receive the name in their argv. Codex and Cursor `agent` receive a best-effort
+TUI rename after AMQ verifies the newly created session. Codex supports direct
+resume by name, for example `codex resume session1/codex`. Cursor `agent`
+resumes through its picker only; resume-by-name is unproven. Set
+`--named=false`, `AMQ_COOP_NAMED=0`, or `"named": false` in `.amq/launch.json`
+to disable it. Explicit provider names and resume or continue flags remain
+unchanged, including `codex resume` and `agent --resume`. Managed launches keep
+naming disabled until their provider-name contract is available.
 
 ### Named sessions
 
@@ -668,9 +736,11 @@ Files are universal, debuggable, and work everywhere. No connection strings, no 
 Those require infrastructure. AMQ is for local inter-process communication where agents share a filesystem. No server to configure or keep running.
 
 **What about Windows?**
-Native Windows supports the core queue, but not `coop exec` or `wake`. Use WSL
-with the Linux binary for the complete co-op workflow. See the explicit
-[platform capability matrix](INSTALL.md#platform-capability-matrix).
+Native Windows supports the core queue and direct submitted injection into a
+live Codex or Claude Code session through `amq-keepalive.exe`; it does not
+support `coop exec`, `amq wake`, or terminal supervision. Use WSL with the
+Linux binary for the complete co-op workflow. See the explicit [platform
+capability matrix](INSTALL.md#platform-capability-matrix).
 
 **Is this production-ready?**
 For local development workflows, yes. AMQ is intentionally simple—it's not trying to be a distributed message broker.
