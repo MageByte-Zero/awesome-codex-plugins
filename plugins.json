@@ -3,7 +3,7 @@
   "name": "awesome-codex-plugins",
   "version": "1.0.0",
   "last_updated": "2026-08-31",
-  "total": 209,
+  "total": 210,
   "categories": [
     "Development & Workflow",
     "Tools & Integrations"
@@ -818,6 +818,16 @@
       "category": "Development & Workflow",
       "source": "awesome-codex-plugins",
       "install_url": "https://raw.githubusercontent.com/AltByteSG/personal-data-protection-skill/HEAD/.codex-plugin/plugin.json"
+    },
+    {
+      "name": "PMC",
+      "url": "https://github.com/DuncanMain/project-memory-core",
+      "owner": "DuncanMain",
+      "repo": "project-memory-core",
+      "description": "Give Codex lasting project context in an Obsidian vault you control.",
+      "category": "Development & Workflow",
+      "source": "awesome-codex-plugins",
+      "install_url": "https://raw.githubusercontent.com/DuncanMain/project-memory-core/HEAD/.codex-plugin/plugin.json"
     },
     {
       "name": "Praxis",
