@@ -701,6 +701,21 @@
       "icon": "./plugins/GreenLv/codex-context-guard/assets/icon.svg"
     },
     {
+      "name": "core-learning",
+      "displayName": "Core Learning",
+      "source": {
+        "source": "local",
+        "path": "./plugins/everclear077/codex-learning-plugin"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Development & Workflow",
+      "description": "Guided learning with Socratic practice, Feynman teach-back, spaced recall, evidence-based project assessment, and optional local Anki export.",
+      "icon": "./plugins/everclear077/codex-learning-plugin/assets/icon.svg"
+    },
+    {
       "name": "debt-ops",
       "displayName": "debt-ops",
       "source": {

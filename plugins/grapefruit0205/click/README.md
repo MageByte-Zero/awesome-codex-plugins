@@ -87,7 +87,10 @@ claude plugin install click@click
 Start a new Claude Code session so the installed Hooks and skill load. Every
 `click-gate` command is an ordinary Bash command that the installed `PreToolUse`
 Hook rewrites onto Click's runner; Evidence state lives under
-`~/.claude/plugins/data/click-click/`. Linux and macOS are supported; see
+`~/.claude/plugins/data/click-click/`. Linux, macOS and Windows are supported;
+on Windows, Claude Code's Bash tool and its Hooks run in Git for Windows, and
+the Hook launcher picks `py -3`, `python` or `python3`. Conditional JS reuse
+runs on Linux and, from an elevated session, on Windows. See
 [Click for Claude Code](platforms/claude/README.md) for the host limits.
 
 To update:
@@ -97,9 +100,9 @@ claude plugin marketplace update click
 claude plugin update click@click
 ```
 
-Current release: **v1.1.0**. Restart and start a new task after updating.
+Current release: **v1.3.0**. Restart and start a new task after updating.
 
-v1.0.0 published what `main` carried as the v0.97 candidate: automatic input observation with signed receipts, conditional JS reuse, recovery after capture loss, automatic sharding in Evidence mode, concurrent shard execution and receipts that survive a new host session. v1.0.1 keeps receipts valid when Claude Code offers other installed plugins' commands on the search path. v1.1.0 accepts the plain `click-gate verify -- <check argv>` form and directs the agent to it, which in two further measured sessions brought the Click-on cost to the Click-off level. Both marketplaces pin `v1.1.0`. See [release notes](RELEASE_NOTES.md).
+v1.0.0 published what `main` carried as the v0.97 candidate: automatic input observation with signed receipts, conditional JS reuse, recovery after capture loss, automatic sharding in Evidence mode, concurrent shard execution and receipts that survive a new host session. v1.0.1 keeps receipts valid when Claude Code offers other installed plugins' commands on the search path. v1.1.0 accepts the plain `click-gate verify -- <check argv>` form and directs the agent to it, which in two further measured sessions brought the Click-on cost to the Click-off level. v1.1.1 makes English the default language of the result line, the reuse notice, `click-gate status` and the dashboard, with Korean and Simplified Chinese selected by the locale. v1.2.0 adds Claude Code on Windows through Git Bash: a POSIX Hook launcher, Git Bash rendering of rewritten commands, and one spelling for Windows search-path entries in the environment fingerprint so receipts are reused. v1.3.0 brings conditional JS reuse to Windows: the ETW backend projects each observed Node process's inputs the way strace does on Linux, the inspector collector runs there with its own profile, the native random-state reader builds with MSVC against the Node headers, and a framework's resolved entry point run by `node` is the framework's check. Without Python 3.10+ Click now asks for an install instead of failing every event. Both marketplaces pin `v1.3.0`. See [release notes](RELEASE_NOTES.md).
 
 ## Try it on your next change
 
@@ -144,7 +147,7 @@ a suitable comparison. Reusing 75% of groups does not mean a 75% faster task.
 | Project | Current scope |
 | --- | --- |
 | Python backends and libraries | Splitting and reuse for supported unittest/pytest commands. Automatic input observation uses bounded CPython 3.12 profiles. |
-| JS/TS frontends and Node projects | Supported Vitest/Jest suites can split and requalify each child. Observation-only conditional reuse is limited to eligible Linux Node 22.23.2 executions. |
+| JS/TS frontends and Node projects | Supported Vitest/Jest suites can split and requalify each child. Observation-only conditional reuse is limited to eligible Node 22.23.2 executions on Linux and Windows. |
 | Go services | `go test` execution and qualifying result reuse. No automatic test splitting. |
 | Mixed-language repositories | Decide execution and reuse per registered check; no claim of discovering every dependency across languages. |
 
@@ -178,7 +181,7 @@ Automation depends on the tool and input profile:
 | Record verification | Default Evidence mode under host permissions. |
 | Split a suite | Supported unittest, pytest, Vitest and Jest profiles, after setup. |
 | Observe Python inputs | Bounded CPython 3.12 and unittest/pytest profiles with platform prerequisites. |
-| Conditional JS reuse | Eligible Linux Node 22.23.2 executions; observed inputs are rechecked and incomplete coverage is disclosed. |
+| Conditional JS reuse | Eligible Node 22.23.2 executions on Linux (strace) and Windows (inbox ETW, elevated session); observed inputs are rechecked and incomplete coverage is disclosed. |
 | Existing repository policy | Declared reuse policies retain their own checks. Observer can stay off. |
 
 Settings, dynamic imports and ignored files can be tracked in supported profiles.
@@ -303,7 +306,7 @@ Optional modes have different purposes:
 
 Output retention and input observation share one execution, including actionable diagnostics. The pytest input profile covers versions 8.4.2 and 9.1.1; cache writes, capture files, timing-sensitive plugins or workers can leave a check ineligible. Click preserves its original options and result. In automatic mode, Node/Vitest/Jest collect file and worker **candidates** with bounded diagnostic attempts; eligible seeds continue learning on requested executions. Raw candidates do not authorize reuse; separately attested conditional receipts can permit reuse without claiming input completeness. See [framework rollout and limits](docs/architecture/automatic-observation.md).
 
-Default `auto` verification also collects Linux Node 22.23.2 clock, random and shared-memory diagnostics, including workers and VM contexts, on the first actual execution of each check. Selected APIs record consumed-value digests; a matching native reader adds per-realm PRNG state and shared-byte samples. These samples do not prove all JavaScript inputs complete. Existing verified receipts and committed repository input policies continue to permit automatic reuse; raw diagnostics alone do not supply JavaScript reuse authority. `observer runtime` explicitly retries collection. See [default collection, conditional reuse and limits](docs/architecture/node-runtime-observation.md).
+Default `auto` verification also collects Node 22.23.2 clock, random and shared-memory diagnostics on Linux and Windows, including workers and VM contexts, on the first actual execution of each check. Selected APIs record consumed-value digests; a matching native reader adds per-realm PRNG state and shared-byte samples. These samples do not prove all JavaScript inputs complete. Existing verified receipts and committed repository input policies continue to permit automatic reuse; raw diagnostics alone do not supply JavaScript reuse authority. `observer runtime` explicitly retries collection. See [default collection, conditional reuse and limits](docs/architecture/node-runtime-observation.md).
 
 Linux strace 6.8, macOS privileged `fs_usage`, and Windows inbox ETW profiles have native-host validation records. The automatic-sharding E2E record is Linux-scoped. Click does not install prerequisites or elevate privileges. Incomplete observation preserves the test's actual result, but does not establish future reuse authority. See [platform requirements and validation scope](skills/click/references/authoritative-observer-v2.md).
 
@@ -311,7 +314,7 @@ Automatic preparation respects existing `evidence-reuse.json` owner policy.
 Structured diagnostics and bounded failure collection retain output from the
 same execution used for native input capture.
 
-On supported Linux Node 22.23.2 profiles, default JavaScript observation can
+On supported Node 22.23.2 profiles (Linux, and Windows from an elevated session), default JavaScript observation can
 produce **conditional reuse** receipts without owner JSON. Two eligible, normally
 requested executions learn and compare observed inputs; later requests recheck
 them. Settings, dynamic imports and ignored files are covered when captured.
@@ -343,7 +346,7 @@ click-gate dashboard stop
 
 Open the local URL reported by the control. The first screen separates command, auto-inventory, exact-reuse, committed-policy, and observation readiness and shows the next action. It also shows the current task, verification-group states, reuse reasons, and work history. Each completed group is persisted while later groups run. A viewer can remain connected across successive Evidence tasks in the same host session and workspace.
 
-The **top-right language selector** offers **한국어 · English · 简体中文**. Korean is the default; the browser remembers the preference for the same origin when local storage is available. Reports follow the selected language, while user-authored task and check names retain their original text.
+The **top-right language selector** offers **한국어 · English · 简体中文**. The browser language selects Korean or Simplified Chinese and everything else reads English; the browser remembers an explicit choice for the same origin when local storage is available. Reports follow the selected language, while user-authored task and check names retain their original text.
 
 The first cards show **net task time** and **token savings rate**. They remain unmeasured until a suitable whole-task comparison is imported. The separate **test execution savings** row estimates avoided reruns from actually reused groups and eligible previous successful durations.
 
@@ -366,7 +369,7 @@ Sharing supports a copied summary, public JSON, and standalone HTML. The public 
 
 ## Verification status and failure feedback
 
-`click-gate status` prints a short read-only summary: executed and reused counts with the estimated avoided time, the mode and mutation revision, and the next action, in the dashboard language selected by `CLICK_LANGUAGE` or the POSIX locale (Korean by default). `click-gate status --json` returns the full report of checks that ran, were reused, did not run, or remain unrequested, including invalidation after mutations, per-check reason codes, and actionable failure details. Both report registered evidence, not whole-task correctness, and neither grants reuse.
+`click-gate status` prints a short read-only summary: executed and reused counts with the estimated avoided time, the mode and mutation revision, and the next action, in the language selected by `CLICK_LANGUAGE` or the POSIX locale (English unless the locale is Korean or Simplified Chinese). The runner's `[Click result]` line and the reuse notice use the same language. `click-gate status --json` returns the full report of checks that ran, were reused, did not run, or remain unrequested, including invalidation after mutations, per-check reason codes, and actionable failure details. Both report registered evidence, not whole-task correctness, and neither grants reuse.
 
 Raw output and source-order fail-fast are the defaults. Opt-in actionable reporting for supported unittest/pytest output summarizes failed tests with bounded local details. Optional bounded failure collection continues only across explicitly submitted, caller-declared independent sources within stated limits; automatic shards are not assumed independent. Setup errors, cancellation, drift, and unknown output stop collection. See [reporting and failure collection](skills/click/references/verification-efficiency.md).
 
@@ -412,7 +415,7 @@ Restart Codex after an installation or update. In the CLI, use `/hooks` to revie
 
 Then start a new task, perform a small real verification, and inspect `click-gate status`. An enabled plugin alone does not demonstrate that its Hooks ran. Windows CI coverage and native Observer validation are described in the [release notes](RELEASE_NOTES.md); they do not replace checking the user's installed host and configuration.
 
-On Claude Code, `claude plugin list` shows the installed plugin and `/hooks` lists the `[plugin:click]` Hook definitions; `claude plugin validate ./dist/claude --strict` checks a source build. The Hook command runs `python3`, so confirm `python3 --version` works in the shell Claude Code uses. Hook output and errors appear in the transcript as `click hook error` lines.
+On Claude Code, `claude plugin list` shows the installed plugin and `/hooks` lists the `[plugin:click]` Hook definitions; `claude plugin validate ./dist/claude --strict` checks a source build. The Hook command is `sh "${CLAUDE_PLUGIN_ROOT}/hooks/claude_hook.sh"`, which Claude Code runs through `sh -c` on Linux and macOS and through Git Bash on Windows; the launcher runs `python3` (Linux and macOS) or `py -3`, `python`, `python3` in that order (Windows), skipping the Microsoft Store alias that only offers to install Python and the macOS stub that only offers the command line tools. Click needs Python 3.10 or newer: without a usable interpreter the prompt hook shows an install message and tells the model to run checks directly until a new session, and tool calls are never blocked. On Windows, Git for Windows must be installed: without it Claude Code offers only its PowerShell tool, which Click does not rewrite yet. Hook output and errors appear in the transcript as `click hook error` lines.
 
 ## Antigravity
 

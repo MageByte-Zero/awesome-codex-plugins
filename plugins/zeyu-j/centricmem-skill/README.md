@@ -11,7 +11,7 @@ This repository is **one package**: [Agent Skills](https://agentskills.io) `SKIL
 Paste this to the agent (one line):
 
 ```
-Install CentricMem from zeyu-j/centricmem-skill. After install, send https://centricmem.com/login?signup=1 and a /connect?device= link. Tell them the key appears only once — save a backup; never paste keys.
+Install CentricMem from zeyu-j/centricmem-skill. After install, send https://centricmem.com/login?signup=1 and a /connect?device= URL — plugin mcp.json is not a completed connect. OAuth-capable clients may also add https://mem.centricmem.com/mcp with no Bearer and finish the browser prompt. Cursor can use Add to Cursor on centricmem.com (URL only, then the browser prompt). Codex: codex mcp add centricmem --url https://mem.centricmem.com/mcp then codex mcp login centricmem, and still send the connect URL unless cm_* already work. Tell them the key appears only once — save a backup; never paste keys.
 ```
 
 If the shell works, a terminal in the project can run:
@@ -31,7 +31,7 @@ Same GitHub repo as a plugin marketplace:
 | CodeBuddy / WorkBuddy | `codebuddy plugin marketplace add zeyu-j/centricmem-skill` then `/plugin install centricmem-skill@centricmem` |
 | Kimi Code | `/plugins install https://github.com/zeyu-j/centricmem-skill` (Custom). Catalog: `/plugins marketplace https://raw.githubusercontent.com/zeyu-j/centricmem-skill/main/.kimi-plugin/marketplace.json`. Set `CENTRICMEM_API_KEY` for host MCP. |
 | Dify | Marketplace listing pending review. Source: `zeyu-j/centricmem-dify`. Or attach MCP `https://mem.centricmem.com/mcp` with the same agent key. |
-| Codex | `codex plugin marketplace add https://github.com/zeyu-j/centricmem-skill.git` then install **centricmem-skill** in Plugins |
+| Codex | `codex mcp add centricmem --url https://mem.centricmem.com/mcp` then `codex mcp login centricmem`. Plugin: `codex plugin marketplace add https://github.com/zeyu-j/centricmem-skill.git` then install **centricmem-skill** in Plugins |
 | Copilot CLI | `copilot plugin marketplace add zeyu-j/centricmem-skill` then `copilot plugin install centricmem-skill` |
 | Kiro | Powers → Add Custom Power → GitHub `https://github.com/zeyu-j/centricmem-skill` |
 | Hermes | Paste the one-liner. After install, send signup **and** a `/connect?device=` URL (POST `https://mem.centricmem.com/connect/device`; keep the secret off chat). Tell them to save a backup — the key appears only once. Enter the key on that page. Writes `~/.hermes/config.yaml`. |
@@ -39,16 +39,16 @@ Same GitHub repo as a plugin marketplace:
 | SkillKit | `skillkit add https://centricmem.com` or `skillkit add zeyu-j/centricmem-skill` |
 | skills.sh / SkillMD | `npx skills add` above, or `skillmd add zeyu-j/centricmem-skill` |
 
-Then keep talking. After install, if `cm_*` tools are missing the agent sends signup **and** a `/connect?device=` link, and tells you to save a backup of the key (it appears only once). You do not paste chats, tokens, or CLI.
+Then keep talking. After install, if `cm_*` tools are missing the agent sends signup **and** a `/connect?device=` link. Plugin `mcp.json` is not a completed connect. OAuth-capable clients may also add `https://mem.centricmem.com/mcp` with no Bearer and finish the browser prompt (Cursor can use Add to Cursor on [centricmem.com](https://centricmem.com); Codex uses `codex mcp add` then `codex mcp login`, and still the connect URL if tools are missing). WorkBuddy/CodeBuddy get the connect URL. Do not download a settings file that contains a key. The agent tells you to save a backup of the key (it appears only once). You do not paste chats, tokens, or CLI.
 
-Hosted librarian: [centricmem.com](https://centricmem.com). Sign up is open. Host MCP: `https://mem.centricmem.com/mcp`. After install, if `cm_*` are missing the agent sends https://centricmem.com/login?signup=1 and a `/connect?device=` URL, and tells you to save a backup — Keys shows the secret only once. Never paste keys in chat.
+Hosted librarian: [centricmem.com](https://centricmem.com). Sign up is open. Host MCP: `https://mem.centricmem.com/mcp`. Never paste keys in chat.
 
 ## How you use it
 
 1. Keep talking where you already work. The agent’s own memories stay on. It says **once** which key this chat is using. Extra grants: tick shelves on **Keys**. Default opens every shelf.
 2. If the library looks empty, the agent offers **once** to file notes you already have as cards. Capture stays. You may skip. It is not a dump of every chat.
 3. When work is real, the agent files a Markdown card and keeps this chat’s transcript in object storage — you do not have to say wrap up. Closing the tab does not file; it files before it stops. Ask it to keep a file and write a card; a folder of originals is one import. Archive zip on the website is optional if you already packed one. If your Skill is behind this repo, the agent refreshes it with `npx skills add` (the current chat still uses the old copy). Plugin installs update via that client’s plugin UI.
-4. Later, ask the agent — or log in to search and download originals. There is no Inbox: file into a named shelf. Leftover shelves (including leftover `unclassified`): the agent copies onto another shelf (`cm_copy`) then **deletes** the old one (`cm_delete`) — it does not download originals to this computer, and there is no restore warehouse. To move a **subset** of cards, the agent uses `cm_move` (default key). Extra keys cannot.
+4. Later, ask the agent — or log in to search and download originals. There is no Inbox: file into a named shelf. Leftover shelves (including leftover `unclassified`): the agent copies onto another shelf (`cm_copy`) then **deletes** the old one (`cm_delete`) — it does not download originals to this computer, and there is no restore warehouse. To move a **subset** of cards, the agent uses `cm_move` (default key). To delete or rename one card, `cm_delete` / `cm_rename` `{file, shelf}`. Extra keys cannot.
 
 You do not run a librarian on this machine. You do not `setup --bootstrap`.
 
@@ -57,7 +57,7 @@ You do not run a librarian on this machine. You do not `setup --bootstrap`.
 This repository is the **Skill**: how agents talk to the hosted librarian.
 
 - [`skills/centricmem-agent/SKILL.md`](./skills/centricmem-agent/SKILL.md) — session loop ([Agent Skills](https://agentskills.io/specification) frontmatter)
-- [`skills/centricmem-agent/REFERENCE.md`](./skills/centricmem-agent/REFERENCE.md) — search, show, sweep, copy, move selected cards, delete leftover shelves
+- [`skills/centricmem-agent/REFERENCE.md`](./skills/centricmem-agent/REFERENCE.md) — search, show, sweep, copy, move selected cards, rename a card title, delete leftover shelves or a card
 - [`plugin.json`](./plugin.json) + [`mcp.json`](./mcp.json) — portable Agent Plugins 1.0 package
 - [`.cursor-plugin/marketplace.json`](./.cursor-plugin/marketplace.json) — Cursor team marketplace
 - [`.claude-plugin/marketplace.json`](./.claude-plugin/marketplace.json) — Claude Code marketplace

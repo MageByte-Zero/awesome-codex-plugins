@@ -1,6 +1,6 @@
 # CentricMem Agent — how to use
 
-The session loop lives in [SKILL.md](SKILL.md). Agents talk to the hosted librarian **only through host MCP**. Prefer the cloud URL `https://mem.centricmem.com/mcp` (Bearer: the default key, or an extra key with shelf grants; OAuth-capable clients may add that URL with no Bearer and finish the browser prompt). stdio `centricmem-host` is the sandbox fallback when `/health` has no `mcp` field. You do not curl librarian HTTP.
+The session loop lives in [SKILL.md](SKILL.md). Agents talk to the hosted librarian **only through host MCP** at `https://mem.centricmem.com/mcp` (Bearer: the default key, or an extra key with shelf grants; OAuth-capable clients may add that URL with no Bearer and finish the browser prompt). You do not curl librarian HTTP.
 
 ## What you are filing
 
@@ -20,23 +20,45 @@ Inbox is gone. Do not mint `unclassified`. Leftover Inbox on an old hub: `cm_cop
 
 ## Reach
 
-MCP tools must be present: `cm_health` `cm_ambient` `cm_doctor` `cm_search` `cm_show` `cm_note` `cm_log_decision` `cm_done` `cm_keep` `cm_library` `cm_copy` `cm_move` `cm_delete` `cm_import` `cm_index`.
+MCP tools must be present: `cm_health` `cm_ambient` `cm_doctor` `cm_search` `cm_show` `cm_note` `cm_log_decision` `cm_done` `cm_keep` `cm_library` `cm_copy` `cm_move` `cm_delete` `cm_rename` `cm_import` `cm_index`.
 
 If they are missing, connect them **this turn**. Never paste the key in chat. Never copy JSON into chat. Do not curl card/search APIs. Do not CLI-write. Do not bootstrap. Do not send a loopback `/connect` or a bare `/connect` with no `device=`.
 
-**This same reply** sends https://centricmem.com/login?signup=1 **and** tells them to save a backup of the key — Keys shows it only once; never paste it here.
+**This same reply** sends https://centricmem.com/login?signup=1 **and** a `/connect?device=` URL **and** tells them to save a backup of the key — Keys shows it only once; never paste it here. Plugin `mcp.json` is URL-only: it is **not** a completed connect. WorkBuddy/CodeBuddy: mint that connect URL this turn.
 
-**MCP OAuth (this client):** if this runtime can add a remote MCP URL and complete a browser login/consent prompt, tell them to add `https://mem.centricmem.com/mcp` **with no Bearer**. The client opens https://centricmem.com/oauth/authorize. Do **not** curl `/oauth/authorize`, `/oauth/token`, `/oauth/register`, or `/mcp`. After they finish the prompt, retry `cm_health`.
-
-**Otherwise** send a `/connect?device=` URL.
+**MCP OAuth (additive):** if this runtime can also add a remote MCP URL and complete a browser login/consent prompt, tell them to add `https://mem.centricmem.com/mcp` **with no Bearer**. Cursor may use Add to Cursor on https://centricmem.com (URL only, then the same prompt). Codex: `codex mcp add centricmem --url https://mem.centricmem.com/mcp` then `codex mcp login centricmem` **and still send the connect URL unless cm_* already work**. Do not curl OAuth or librarian HTTP. Do not download or open a settings file that contains a key, and do not ask them to send you that path. A URL-only `mcp.json` or Codex `config.toml` (url, no `Authorization`) may be copied or opened. After they finish the prompt, retry `cm_health`.
 
 **Shell blocked** (Grok Bot, web bots): cannot mint `device=`. Send signup only. Tell them to save a backup (shown once). They paste Bearer **only** in this agent’s MCP / plugin settings (`https://mem.centricmem.com/mcp`). Never here.
 
-**Shell works, `centricmem` missing** (Hermes): do not npm-install the CLI. Fetch **POST** `https://mem.centricmem.com/connect/device` with `{hostname}` once — authenticate bootstrap, not a card write. Send JSON `url` (`https://centricmem.com/connect?device=…`). Keep `secret` off chat (agent memory / a local file outside the git repo). They sign up, copy the key from the box at the **top** of Agent keys (once — tell them to save a backup), enter it on that page (ten minutes). Poll GET `https://mem.centricmem.com/connect/device/<id>` until `status=ready`, then POST `…/claim` `{secret}`. Write the claimed Bearer into this agent’s MCP file. Never print the token. Retry `cm_health`. “Do not call `/register` `/login`” means do not POST those HTTP APIs; you **do** send the signup URL and you **do** POST `/connect/device`.
+**Shell works, `centricmem` missing** (Hermes, Codex, WorkBuddy): do not npm-install the CLI. Fetch **POST** `https://mem.centricmem.com/connect/device` with `{hostname}` once — authenticate bootstrap, not a card write. Send JSON `url` (`https://centricmem.com/connect?device=…`). Keep `secret` off chat (agent memory / a local file outside the git repo). They sign up, copy the key from the box at the **top** of Agent keys (once — tell them to save a backup), enter it on that page (ten minutes). Poll GET `https://mem.centricmem.com/connect/device/<id>` until `status=ready`, then POST `…/claim` `{secret}`. Write the claimed Bearer into this agent’s MCP file. Never print the token. Retry `cm_health`. “Do not call `/register` `/login`” means do not POST those HTTP APIs; you **do** send the signup URL and you **do** POST `/connect/device`.
 
 **`centricmem` on PATH:** run `centricmem connect --device` and send **only** the printed `/connect?device=` URL — never the secret, never the key. They have ten minutes. Tell them to save a backup — the secret appears only once. They enter **any** agent key on that page (default = every shelf, extra key = granted shelves).
 
-Config (agent key stays off git). Hermes `~/.hermes/config.yaml`:
+Config (agent key stays off git). Prefer OAuth — URL only, no Bearer:
+
+```json
+{
+  "mcpServers": {
+    "centricmem": {
+      "type": "http",
+      "url": "https://mem.centricmem.com/mcp"
+    }
+  }
+}
+```
+
+Cursor desktop may set `"auth": { "CLIENT_ID": "centricmem-cursor" }` on that entry (Add to Cursor on https://centricmem.com does this). Claude custom connectors add the same URL; the host uses DCR or CIMD. Do not put a Bearer in git or in a deeplink.
+
+Codex (`~/.codex/config.toml`) when OAuth works — URL only, then `codex mcp login centricmem`:
+
+```toml
+[mcp_servers.centricmem]
+url = "https://mem.centricmem.com/mcp"
+```
+
+Do not put `http_headers` Authorization in that file when OAuth works. Device-connect may still write a Bearer there as fallback.
+
+Hermes `~/.hermes/config.yaml` when OAuth is unavailable:
 
 ```yaml
 mcp_servers:
@@ -46,7 +68,7 @@ mcp_servers:
       Authorization: "Bearer <default key or extra key>"
 ```
 
-Other agents (`mcp.json`):
+Other agents (`mcp.json`) paste-key fallback:
 
 ```json
 {
@@ -62,25 +84,9 @@ Other agents (`mcp.json`):
 }
 ```
 
-Sandbox fallback (only if `cm_health` has no `mcp` field, or the origin is not upgraded yet):
-
-```json
-{
-  "mcpServers": {
-    "centricmem": {
-      "command": "centricmem-host",
-      "env": {
-        "CENTRICMEM_URL": "https://mem.centricmem.com",
-        "CENTRICMEM_TOKEN": "<default key or extra key>"
-      }
-    }
-  }
-}
-```
-
 `setup --install-skill` on a guest copies Skill files only (CLI >=0.21.25). It must not merge leftover catalog pairing tokens into Cursor `mcp.json`. Host MCP on a guest is MCP OAuth when this client can complete a browser prompt (add `https://mem.centricmem.com/mcp` with no Bearer); otherwise `centricmem connect --device` when the CLI works; if the shell works but `centricmem` is missing, fetch POST `/connect/device` and send the JSON `url`; if the shell is blocked, the human adds `https://mem.centricmem.com/mcp` in this agent’s settings (Bearer from Keys, never in chat). Local librarian hosts may still merge loopback MCP when `/health` advertises `mcp`. Never ask them to paste a token in chat. Never one-click install. Never a dashboard “connect this computer”. After they connect, retry `cm_health` in this chat; a new chat only if tools still 401. Token failure: say once; connect again (CLI or signup+settings); **hold the sweep** (this agent’s memory `CentricMem deferred sweep` + transcript path) until `cm_health` works. Only drop the hold if they said don't log or they stopped using this Skill.
 
-Do **not** call `/download`, HTTP `/delete` (cards), billing, account delete, or `/register` `/login`. Humans download originals and **delete cards** on the dashboard. Login uniquely owns **card** delete, billing, rotating the default key, and deleting the account (Billing). Never call account delete from MCP. The **default** key (`*`) may mint, rename, grant, and revoke extras — that stays HTTP/dashboard/CLI, not these `cm_*` tools, so a new token never lands in chat. Default (and owner login) may `cm_copy` / `cm_delete` leftover shelves (`cm_delete` is delete, not archive — no restore) and `cm_move` selected cards. Extra keys cannot manage keys, move cards, or delete a leftover shelf; they may `cm_copy` if both grants. Attachments are metered per plan (Lite 100MB, Education 200MB, Pro 1GB, Lifetime 1 2GB, Ultra 10GB, Lifetime 2 20GB; operator uncapped). Named shelves: Lite/Education 1, Pro 10, Ultra 50, Lifetime 1 20, Lifetime 2 100; operator uncapped. Over attachment quota, `cm_keep` fails — say so; do not drop bytes silently. Over the named-shelf cap, `cm_library` mint is 403 `SHELF_LIMIT`; rename an existing id still works. File on an existing named shelf or they upgrade.
+Do **not** call `/download`, HTTP `/delete` (use `cm_delete`), HTTP `/rename` (use `cm_rename`), billing, account delete, or `/register` `/login`. Humans download originals on the dashboard. Login uniquely owns billing, rotating the default key, and deleting the account (Billing). Never call account delete from MCP. Default key or login may `cm_delete` `{file, shelf}` a card, or `cm_rename` `{file, shelf, title}` (always pass the shelf). Extra keys cannot. The **default** key (`*`) may mint, rename, grant, and revoke extras — that stays HTTP/dashboard/CLI, not these `cm_*` tools, so a new token never lands in chat. Default (and owner login) may `cm_copy` / `cm_delete` leftover shelves (`cm_delete` `{id}` is delete, not archive — no restore), `cm_move` selected cards, and `cm_rename` a card title. Extra keys cannot manage keys, move cards, delete a leftover shelf or card, or rename a card; they may `cm_copy` if both grants. Attachments are metered per plan (Lite 100MB, Education 200MB, Pro 1GB, Lifetime 1 2GB, Ultra 10GB, Lifetime 2 20GB; operator uncapped). Named shelves: Lite/Education 1, Pro 10, Ultra 50, Lifetime 1 20, Lifetime 2 100; operator uncapped. Over attachment quota, `cm_keep` fails — say so; do not drop bytes silently. Over the named-shelf cap, `cm_library` mint is 403 `SHELF_LIMIT`; rename an existing id still works. File on an existing named shelf or they upgrade.
 
 ## Search and show
 
@@ -104,7 +110,7 @@ Useful query bits (in `q` / `tags` / `type`): `filter`, `tag`, `type:decision`, 
 |-----------|-----|
 | Session start | `cm_health` + `cm_ambient` (never a stale `.ambient.md`). Then refresh Skill if published `version` is newer. **Once**, say which key: `*` = default (this library plus shelves shared with this email), else list grant ids. Extra keys do not see `share:` rows. If `library=(none)` / unmatched cwd, pick from `libraries=` or mint — do not use the hub `use` pin. Pass a `share:` id **exactly** as listed; do not mint `share:` |
 | This chat is default (`grants=["*"]`) | **once**: every shelf. Another agent/person/machine should only see some shelves → they mint an extra on **Keys**, tick those, connect **that** extra there. Do not nag otherwise |
-| This chat is an extra (listed shelf ids) | **once**: those shelves. More/fewer → they tick grants on Keys (login, or connect default first). Need every shelf / mint a shelf / rename label / move cards / delete leftover → authenticate **default** |
+| This chat is an extra (listed shelf ids) | **once**: those shelves. More/fewer → they tick grants on Keys (login, or connect default first). Need every shelf / mint a shelf / rename label / move cards / delete leftover / rename a card → authenticate **default** |
 | 403 `LIBRARY_MISMATCH` / cannot open a shelf | this key’s grants omit it. Keys: tick that shelf, or connect default. Never paste a key |
 | They ask which key this chat is | `cm_health` `grants` only. Never list tokens |
 | Empty library after Skill install | **once**, offer existing durable memories as cards (this file). Capture stays. They may skip |
@@ -177,6 +183,8 @@ Hold half-finished thoughts. When the chunk is done, file **before you stop talk
 | Copy shelf | leftover named shelf (or leftover Inbox) should live on another | `cm_copy` `{from,to}`. Dest must exist. Extra keys need both grants. Never download originals here. Never `to=unclassified` |
 | Move cards | a subset of Markdown cards should live on another named shelf | `cm_move` `{from,to,files}` (default key or login). Extra keys cannot. Source files are deleted. Decision numbers stay if free on dest. Never download originals here. Never `to=unclassified` |
 | Delete leftover shelf | leftover is empty or already copied | `cm_delete` `{id}` (default key or login). Extra keys cannot. Leftover Inbox may be the source. This is delete, not archive |
+| Delete a card | one Markdown card should go | `cm_delete` `{file, shelf}` (library= also works). Always pass the shelf. Default key or login. Extra keys cannot. Shared shelves cannot. R2 attach is removed with the card. `dryRun` previews |
+| Rename a card | the displayed title is wrong | `cm_rename` `{file, shelf, title}` (optional `heading=` when the file has several `##` sections). File path stays. Decision numbers stay. Default key or login. Extra keys cannot. Shared shelves cannot. Humans can also rename on the Library desk. `dryRun` previews |
 | Bundle | capture import | `cm_import` with `library=` a named shelf |
 | Index | after bulk import | `cm_index` |
 

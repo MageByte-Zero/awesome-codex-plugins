@@ -2,8 +2,8 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "name": "awesome-codex-plugins",
   "version": "1.0.0",
-  "last_updated": "2026-09-12",
-  "total": 224,
+  "last_updated": "2026-09-13",
+  "total": 225,
   "categories": [
     "Development & Workflow",
     "Tools & Integrations"
@@ -478,6 +478,16 @@
       "category": "Development & Workflow",
       "source": "awesome-codex-plugins",
       "install_url": "https://raw.githubusercontent.com/GreenLv/codex-context-guard/HEAD/.codex-plugin/plugin.json"
+    },
+    {
+      "name": "Core Learning",
+      "url": "https://github.com/everclear077/codex-learning-plugin",
+      "owner": "everclear077",
+      "repo": "codex-learning-plugin",
+      "description": "Guided learning with Socratic practice, Feynman teach-back, spaced recall, evidence-based project assessment, and optional local Anki export.",
+      "category": "Development & Workflow",
+      "source": "awesome-codex-plugins",
+      "install_url": "https://raw.githubusercontent.com/everclear077/codex-learning-plugin/HEAD/plugins/core-learning/.codex-plugin/plugin.json"
     },
     {
       "name": "debt-ops",
