@@ -2,7 +2,7 @@
 
 **One library. Every agent. Every desk.**
 
-A hosted librarian for AI agents. Capture stays in the agent you already use. CentricMem organises and retrieves — Cursor, Claude Code, Codex, Copilot, Kiro, Kilo, CodeBuddy, Kimi Code, and the next one share the same shelf.
+A hosted librarian for AI agents. Capture stays in the agent you already use. CentricMem organises and retrieves — Cursor, Claude Code, Codex, Hermes, Pi, OpenClaw, DSH, Copilot, Kiro, Kilo, CodeBuddy, Kimi Code, and the next one share the same shelf.
 
 This repository is **one package**: [Agent Skills](https://agentskills.io) `SKILL.md` plus an [Agent Plugins 1.0](https://agent-plugins.org) bundle (`plugin.json` + `skills/` + `mcp.json`). Install it once from GitHub; each client uses its own command. Do not paste keys or marketplace JSON into chat.
 
@@ -11,7 +11,7 @@ This repository is **one package**: [Agent Skills](https://agentskills.io) `SKIL
 Paste this to the agent (one line):
 
 ```
-Install CentricMem from zeyu-j/centricmem-skill. After install, send https://centricmem.com/login?signup=1 and a /connect?device= URL — plugin mcp.json is not a completed connect. OAuth-capable clients may also add https://mem.centricmem.com/mcp with no Bearer and finish the browser prompt. Cursor can use Add to Cursor on centricmem.com (URL only, then the browser prompt). Codex: codex mcp add centricmem --url https://mem.centricmem.com/mcp then codex mcp login centricmem, and still send the connect URL unless cm_* already work. Tell them the key appears only once — save a backup; never paste keys.
+Install CentricMem from zeyu-j/centricmem-skill. After install, every agent sends https://centricmem.com/login?signup=1 and tries a /connect?device= URL — plugin mcp.json or mcp add with no Bearer is not a completed connect. If minting that URL fails, they email zeyu@poppyg.com with the error (never a key); then MCP OAuth only if this agent will receive the browser login (Grok Bot and Manus may; a 127.0.0.1 callback does not when this agent is not listening there). If they already have a key or a finished OAuth login in this agent, ask for a new chat — do not strip Bearer, do not mint a new connect URL. Tell them the key appears only once — save a backup; never paste keys. If connect or usage still fails, they email zeyu@poppyg.com (never a key).
 ```
 
 If the shell works, a terminal in the project can run:
@@ -31,15 +31,18 @@ Same GitHub repo as a plugin marketplace:
 | CodeBuddy / WorkBuddy | `codebuddy plugin marketplace add zeyu-j/centricmem-skill` then `/plugin install centricmem-skill@centricmem` |
 | Kimi Code | `/plugins install https://github.com/zeyu-j/centricmem-skill` (Custom). Catalog: `/plugins marketplace https://raw.githubusercontent.com/zeyu-j/centricmem-skill/main/.kimi-plugin/marketplace.json`. Set `CENTRICMEM_API_KEY` for host MCP. |
 | Dify | Marketplace listing pending review. Source: `zeyu-j/centricmem-dify`. Or attach MCP `https://mem.centricmem.com/mcp` with the same agent key. |
-| Codex | `codex mcp add centricmem --url https://mem.centricmem.com/mcp` then `codex mcp login centricmem`. Plugin: `codex plugin marketplace add https://github.com/zeyu-j/centricmem-skill.git` then install **centricmem-skill** in Plugins |
+| Codex | Every agent tries `/connect?device=` first. Plugin: `codex plugin marketplace add https://github.com/zeyu-j/centricmem-skill.git` then install **centricmem-skill**. `codex mcp login` only after that mint fails, and only if this Codex will receive the Loopback callback |
+| Hermes | `hermes skills install zeyu-j/centricmem-skill/skills/centricmem-agent`. Mint `/connect?device=` first. Local `hermes mcp add --url https://mem.centricmem.com/mcp --auth oauth centricmem` only after that mint fails if this Hermes will receive the browser login. |
+| Pi | `pi install https://github.com/zeyu-j/centricmem-skill`. Then URL-only `~/.pi/agent/mcp.json` (`url` + `type: streamable-http`). MCP is not auto-wired by the package. |
+| OpenClaw | Compatible **bundle** (Agent Plugins / Claude / Codex / Cursor). Not ClawHub. `openclaw plugins install git:github.com/zeyu-j/centricmem-skill` or `openclaw plugins install centricmem-skill --marketplace zeyu-j/centricmem-skill`. Do not add `openclaw.plugin.json`. |
+| DSH | Cordis **funnel** only. Needs `pnpm` (`npm i -g pnpm` if missing). Pin: `dsh plugin --profile web add github:zeyu-j/centricmem-skill#v0.21.72`. Then from the profile dir run `node node_modules/centricmem-skill/dsh/copy-skill.mjs` so `$DSH_HOME/skills/centricmem-agent` exists (funnel MCP does not load Skill from `node_modules`). Overlay Bearer on the same `id` in `$DSH_HOME/profiles/<profile>/cordis.patch.yml` (restate the whole config). New chat. Tools are `mcp__centricmem__cm_*`. Skill stays PolyForm; [`dsh/`](./dsh/) is MIT glue. GitHub topic `dsh-plugin`. |
 | Copilot CLI | `copilot plugin marketplace add zeyu-j/centricmem-skill` then `copilot plugin install centricmem-skill` |
 | Kiro | Powers → Add Custom Power → GitHub `https://github.com/zeyu-j/centricmem-skill` |
-| Hermes | Paste the one-liner. After install, send signup **and** a `/connect?device=` URL (POST `https://mem.centricmem.com/connect/device`; keep the secret off chat). Tell them to save a backup — the key appears only once. Enter the key on that page. Writes `~/.hermes/config.yaml`. |
 | Grok Bot | Paste the one-liner. Shell is blocked, so send signup only; add `https://mem.centricmem.com/mcp` in that bot’s MCP settings (key from Keys, never in chat). |
 | SkillKit | `skillkit add https://centricmem.com` or `skillkit add zeyu-j/centricmem-skill` |
 | skills.sh / SkillMD | `npx skills add` above, or `skillmd add zeyu-j/centricmem-skill` |
 
-Then keep talking. After install, if `cm_*` tools are missing the agent sends signup **and** a `/connect?device=` link. Plugin `mcp.json` is not a completed connect. OAuth-capable clients may also add `https://mem.centricmem.com/mcp` with no Bearer and finish the browser prompt (Cursor can use Add to Cursor on [centricmem.com](https://centricmem.com); Codex uses `codex mcp add` then `codex mcp login`, and still the connect URL if tools are missing). WorkBuddy/CodeBuddy get the connect URL. Do not download a settings file that contains a key. The agent tells you to save a backup of the key (it appears only once). You do not paste chats, tokens, or CLI.
+Then keep talking. After install, if `cm_*` tools are missing every agent sends signup **and** tries a `/connect?device=` link. Plugin `mcp.json` is not a completed connect. If minting that URL fails they email zeyu@poppyg.com with the error; then OAuth only if this agent will receive the browser login (Grok Bot / Manus may). Do not skip the connect URL because OAuth exists. WorkBuddy/CodeBuddy try the connect URL too. Do not download a settings file that contains a key. The agent tells you to save a backup of the key (it appears only once). You do not paste chats, tokens, or CLI.
 
 Hosted librarian: [centricmem.com](https://centricmem.com). Sign up is open. Host MCP: `https://mem.centricmem.com/mcp`. Never paste keys in chat.
 
@@ -67,9 +70,10 @@ This repository is the **Skill**: how agents talk to the hosted librarian.
 - [`.agents/plugins/marketplace.json`](./.agents/plugins/marketplace.json) — Codex marketplace
 - [`.github/plugin/marketplace.json`](./.github/plugin/marketplace.json) — Copilot CLI marketplace
 - [`.kiro/plugins/marketplace.json`](./.kiro/plugins/marketplace.json) — Kiro pin-sync catalog
+- [`dsh/cordis.patch.yml`](./dsh/cordis.patch.yml) — DSH Cordis funnel (MIT glue, URL-only MCP, `failOnStartupError: true`). [`dsh/copy-skill.mjs`](./dsh/copy-skill.mjs) copies the Skill into `$DSH_HOME/skills/`. Skill stays PolyForm. Not ClawHub.
 
 It is not the librarian, not the CLI source, and not a self-hosted kit. One public skill: `centricmem-agent`.
 
 ## License
 
-[PolyForm Noncommercial 1.0.0](./LICENSE) — attribution required; no commercial use.
+[PolyForm Noncommercial 1.0.0](./LICENSE) — attribution required; no commercial use. The Cordis patch in [`dsh/`](./dsh/) is separately [MIT](./dsh/LICENSE) so DSH can mount the hosted MCP client. That does **not** relicense `SKILL.md`.

@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/GreenLv/codex-context-guard/actions/workflows/ci.yml/badge.svg)](https://github.com/GreenLv/codex-context-guard/actions/workflows/ci.yml)
 [![HOL Plugin Scanner](https://github.com/GreenLv/codex-context-guard/actions/workflows/hol-plugin-scanner.yml/badge.svg)](https://github.com/GreenLv/codex-context-guard/actions/workflows/hol-plugin-scanner.yml)
-[![HOL Guard](https://img.shields.io/endpoint?url=https%3A%2F%2Fhol.org%2Fapi%2Fregistry%2Fbadges%2Fplugin%3Fslug%3Dgerui-lv%252Fcontext-guard%26metric%3Dtrust)](https://hol.org/registry/plugins/gerui-lv%2Fcontext-guard)
+[![HOL Guard](https://img.shields.io/endpoint?url=https%3A%2F%2Fhol.org%2Fapi%2Fregistry%2Fbadges%2Fplugin%3Fslug%3Dgreenlv%252Fcodex-context-guard%26metric%3Dtrust&label=HOL%20trust)](https://hol.org/registry/plugins/greenlv%2Fcodex-context-guard)
 [![Release](https://img.shields.io/github/v/release/GreenLv/codex-context-guard)](https://github.com/GreenLv/codex-context-guard/releases)
 [![License](https://img.shields.io/github/license/GreenLv/codex-context-guard)](LICENSE)
 
@@ -12,9 +12,9 @@ Context Guard keeps important requirements from disappearing during a long Codex
 
 It works beside Codex Plan, Goal, memories, subagents, worktrees, and the transcript; it does not replace or control them.
 
-> Current release: `0.13.3`. See the [release notes](docs/releases/v0.13.3.md), [changelog](CHANGELOG.md), [compatibility matrix](docs/COMPATIBILITY.md), and [local acceptance record](docs/LOCAL_ACCEPTANCE.md).
+> Current release: `0.13.9`. See the [release notes](docs/releases/v0.13.9.md), [changelog](CHANGELOG.md), [compatibility matrix](docs/COMPATIBILITY.md), and [local acceptance record](docs/LOCAL_ACCEPTANCE.md).
 >
-> Source candidate: `0.13.5` (unreleased). It fixes answer-delivery tracking and bounded continuation feedback, and includes the HOL scanner and registry-refresh updates. It has not been tagged or published.
+> Version `0.13.9`. It fixes false CI waits inside words such as `explicit`, answer-delivery tracking, bounded continuation feedback, and Windows `SessionEnd` cleanup startup; it also includes the HOL scanner and registry-refresh updates. Automatic answer closure accepts supported English/Chinese information requests; unfamiliar wording stays pending. See the [release notes](docs/releases/v0.13.9.md).
 >
 > Version `0.13.3` keeps ordinary commits and single branch pushes available even when an active release ledger is unreadable, while publication actions remain fail-closed. It is a compatible patch with no schema, protocol, activation, or host-permission change.
 >
@@ -66,6 +66,8 @@ context-guard diagnose
 ```
 
 For a recovery check, use it on a non-trivial synthetic task, run `/compact`, and confirm that the same open requirements return immediately afterward.
+
+For a worked example, follow the [Context Guard walkthrough on HOL](https://hol.org/blog/context-guard-codex-compaction-evidence-workflow): define a document’s requirements, compact the task, then check the recovered requirements and finished document.
 
 ## What it protects
 
