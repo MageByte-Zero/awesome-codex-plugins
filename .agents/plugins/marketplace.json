@@ -1943,6 +1943,20 @@
       "description": "Structured AI writing workflow for planning, critique, revision, translation, style distillation, and opt-in local preference learning."
     },
     {
+      "name": "yylo",
+      "displayName": "YYLO",
+      "source": {
+        "source": "local",
+        "path": "./plugins/yylo-dev/yylo"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Development & Workflow",
+      "description": "Command-line orchestrator for coding agents that creates a dedicated branch/worktree per task, delegates to Pi and Codex subagents, and enforces typed task, validation, merge, and release-readiness boundaries with receipt-backed repository changes."
+    },
+    {
       "name": "zagrosi-forge",
       "displayName": "Zagrosi Forge",
       "source": {

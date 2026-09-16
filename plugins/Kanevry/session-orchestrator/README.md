@@ -69,6 +69,8 @@ The first three are the commands `/go` runs between waves and `/close` runs at t
 
 On Codex the same three are `$session-orchestrator:session feature`, `$session-orchestrator:go`, `$session-orchestrator:close` ([Codex usage](docs/codex-setup.md#usage)). `/plan` and `/evolve` extend the loop; you can start with just these three.
 
+In headless Claude Code (`claude -p`), `/session` and `/plan` are reserved terminal-only built-in names and the bare form is refused; use `/session-orchestrator:session` and `/session-orchestrator:plan` there. Every other command keeps its bare form.
+
 ## How it works
 
 When you type `/session feature`:
@@ -91,7 +93,7 @@ When you type `/session feature`:
 .claude/STATE.md                    # wave progress and deviations (harness-specific directory)
 ```
 
-The plugin is **44 skills, 26 slash commands, 14 typed subagents and 27 hook files across 10 event types**. Skills, commands and agents are Markdown with YAML frontmatter; the code that dispatches, validates and records runs in `scripts/lib/*.mjs` and `hooks/*.mjs`. There is no build step and no compiled artifact — when a session does something you did not expect, you can open the file that decided it. Full inventory: [`docs/components.md`](docs/components.md).
+The plugin is **50 skills, 26 slash commands, 14 typed subagents and 27 hook files across 10 event types**. Skills, commands and agents are Markdown with YAML frontmatter; the code that dispatches, validates and records runs in `scripts/lib/*.mjs` and `hooks/*.mjs`. There is no build step and no compiled artifact — when a session does something you did not expect, you can open the file that decided it. Full inventory: [`docs/components.md`](docs/components.md).
 
 ## Why it is built this way
 
