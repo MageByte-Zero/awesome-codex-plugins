@@ -1,6 +1,6 @@
 {
   "name": "@yylo/cli",
-  "version": "0.2.3",
+  "version": "0.2.5",
   "description": "YYLO (why-lo): task-driven AI subagent orchestration.",
   "keywords": [
     "Ralph",
@@ -42,12 +42,14 @@
     "scripts/test-support/task_workspace_fixture.py",
     "scripts/test-performance/task-workspace-duration-weights.v1.json",
     "README.md",
+    "docs/controller-generation-upgrades.md",
     "CHANGELOG.md",
     "assets/yylo-logo-square-neon-green.png"
   ],
   "scripts": {
     "dev": "tsx src/bin/cli.ts",
-    "build": "npm run generate:implementation-contract -- --check && tsup && npm run build:copy-templates && npm run build:copy-services && npm run build:copy-extensions && npm run build:copy-wrapper && node scripts/clean-template-bytecode.mjs dist/templates",
+    "build": "npm run generate:instruction-compatibility -- --check && npm run generate:implementation-contract -- --check && tsup && npm run build:copy-templates && npm run build:copy-services && npm run build:copy-extensions && npm run build:copy-wrapper && node scripts/clean-template-bytecode.mjs dist/templates",
+    "generate:instruction-compatibility": "node scripts/generate-instruction-compatibility.mjs",
     "generate:implementation-contract": "node scripts/generate-implementation-contract.mjs",
     "test:implementation-contract": "node scripts/generate-implementation-contract.mjs --check",
     "build:copy-templates": "node scripts/copy-templates.mjs",
@@ -64,6 +66,7 @@
     "test:simple": "npm test -- src/utils/__tests__/simple-init.test.ts src/utils/__tests__/simple-workspace-routing.test.ts src/core/__tests__/simple-startup.test.ts src/core/__tests__/session-simple.test.ts",
     "test:simple-package": "node scripts/verify-simple-package.mjs",
     "test:managed-assets": "node scripts/verify-managed-assets.mjs",
+    "test:controller-upgrade": "node scripts/verify-controller-upgrade.mjs",
     "test:skill-contracts": "node scripts/verify-skill-argument-contracts.mjs",
     "test:template-bytecode-package": "node scripts/verify-template-bytecode-cleanup.mjs",
     "test:installed-test-fixture-package": "node scripts/verify-installed-test-fixture.mjs",
@@ -81,6 +84,7 @@
     "test:coverage:python": "python -m pytest test_pi_service/ test_codex_streaming/ test_claude_service/ test_slack_integration/ test_github_integration/ test_attachments/ --cov=src/templates/services --cov=src/templates/scripts --cov-report=lcov:coverage/python-lcov.info --cov-report=term-missing -q",
     "test:watch": "vitest -c ./vitest.fast.config.ts",
     "test:python": "python -m pytest test_pi_service/ test_codex_streaming/ test_claude_service/ test_slack_integration/ test_github_integration/ test_attachments/ -q",
+    "test:headless-presentation-package": "node scripts/verify-headless-presentation.mjs",
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
     "format": "prettier --write \"src/**/*.{ts,md}\"",

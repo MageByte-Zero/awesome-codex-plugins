@@ -59,7 +59,7 @@ npm install --global '@yylo/cli@latest'
 # Explicit prerelease
 npm install --global '@yylo/cli@next'
 # Exact version matching this checkout (once published)
-npm install -g @yylo/cli@0.2.3
+npm install -g @yylo/cli@0.2.5
 
 npm view '@yylo/cli' version dist-tags --json
 yy --version
@@ -366,6 +366,16 @@ executable compatibility surface.
 ## Maintainer npm release
 
 Normal tasks and `yy merge` own integration. After an ordinary version bump is integrated, maintainers use `scripts/release-cli.sh prepare CLI_VERSION BENCHMARK_VERSION`, obtain explicit publication approval, and then run the separate `publish` command. The CLI has no release command.
+
+## Controller generation upgrades
+
+Recognized controller generations migrate automatically on first task/agent use;
+controller-local scripts, policy and executable identity move together. Diagnose
+without changing state using `yy scripts generation doctor`. Unknown/customized
+bytes are preserved, and fallback requires a trusted retained executable plus
+scripts. See [upgrade, recovery and validation guidance](docs/controller-generation-upgrades.md).
+Maintainer release preparation gates the exact npm tarball and binds its immutable
+acceptance report; this does not authorize publication.
 
 ## Receipt-bound workspace relocation
 
