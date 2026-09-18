@@ -59,21 +59,21 @@ If you add source-repository scanner CI, keep the workflow run URL for local deb
 The release metadata below is synced automatically from the latest published HOL scanner release.
 
 ```bash
-pipx install --force "plugin-scanner==3.0.189"
+pipx install --force "plugin-scanner==3.0.190"
 plugin-scanner scan . --format text
 ```
 
-Expected reviewed wheel SHA256: `ad4f5c458e4930c25085e9e25d66a621d07c21cb27636bf06d0637fb8af19c1b`
+Expected reviewed wheel SHA256: `82a9b973ee9ac0446e539f7e907126e580ccd800d22711e8086ee7d65930430d`
 
 If you want to verify the exact wheel before install:
 
 ```bash
 rm -rf .hol-plugin-scanner-dist
-python3 -m pip download --only-binary=:all: --no-deps --dest .hol-plugin-scanner-dist "plugin-scanner==3.0.189"
+python3 -m pip download --only-binary=:all: --no-deps --dest .hol-plugin-scanner-dist "plugin-scanner==3.0.190"
 python3 -m pip hash .hol-plugin-scanner-dist/*.whl
 ```
 
-Use local scanner output to fix problems before submission. For catalog admission, the numeric score from the catalog-owned centralized scan is authoritative and must be at least **80/130**.
+You need a score of **80/130** or higher with **no critical or high severity findings**. Save the output to include in your PR description.
 
 ### Step 3: Verify your plugin repo has the required files
 
@@ -127,7 +127,7 @@ The commands below stay pinned to the same reviewed scanner release used in the 
 
 ```bash
 # Install the current reviewed release
-pipx install --force "plugin-scanner==3.0.189"
+pipx install --force "plugin-scanner==3.0.190"
 
 # Scan your plugin
 plugin-scanner scan . --format text
@@ -139,7 +139,7 @@ plugin-scanner lint . --format text
 plugin-scanner verify . --format text
 ```
 
-Expected reviewed wheel SHA256: `ad4f5c458e4930c25085e9e25d66a621d07c21cb27636bf06d0637fb8af19c1b`
+Expected reviewed wheel SHA256: `82a9b973ee9ac0446e539f7e907126e580ccd800d22711e8086ee7d65930430d`
 
 ### Required in Your Plugin Repo
 
