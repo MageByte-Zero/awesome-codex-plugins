@@ -584,6 +584,21 @@
       "icon": "./plugins/joelfarthing/codex-process-jobs/assets/icon.png"
     },
     {
+      "name": "codex-quota-optimizer",
+      "displayName": "Codex Quota Optimizer",
+      "source": {
+        "source": "local",
+        "path": "./plugins/ctdaniel/codex-quota-optimizer"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Development & Workflow",
+      "description": "Reduces avoidable Codex usage with task-aware model routing, focused context, minimal change surfaces, and layered verification.",
+      "icon": "./plugins/ctdaniel/codex-quota-optimizer/assets/icon.svg"
+    },
+    {
       "name": "codex-quota-title",
       "displayName": "Codex Quota Title",
       "source": {
