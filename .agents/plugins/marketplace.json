@@ -1057,6 +1057,21 @@
       "icon": "./plugins/yimwoo/hotl-plugin/docs/assets/codex/hotl-icon.png"
     },
     {
+      "name": "jev-use",
+      "displayName": "jev-use",
+      "source": {
+        "source": "local",
+        "path": "./plugins/shitianfang/jev-use"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Development & Workflow",
+      "description": "Hands the steps of a Codex session that produce no text — is the build done, which of these elements do I click, is this shell command safe — to Jev, TypeSafe AI's judgment model, with a PreToolUse command gate and typed escalation back to the model for anything it cannot decide.",
+      "icon": "./plugins/shitianfang/jev-use/assets/icon.svg"
+    },
+    {
       "name": "kernel",
       "displayName": "Kernel",
       "source": {
@@ -1351,6 +1366,20 @@
       "category": "Development & Workflow",
       "description": "22 structured quality engineering skills for automotive and manufacturing: ISO 9001, IATF 16949, AIAG-VDA FMEA, VDA 6.3, PPAP, APQP, SPC, MSA.",
       "icon": "./plugins/RBraga01/Quality-Engineering-Skills/docs/assets/qes-logo.jpg"
+    },
+    {
+      "name": "quiver",
+      "displayName": "Quiver",
+      "source": {
+        "source": "local",
+        "path": "./plugins/yagizdo/quiver"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Development & Workflow",
+      "description": "21 development lifecycle skills and 20 review and debug agents for Codex, Claude Code, Cursor, and OpenCode, where every step writes its output to disk instead of leaving it in the chat."
     },
     {
       "name": "rag-reviewer",

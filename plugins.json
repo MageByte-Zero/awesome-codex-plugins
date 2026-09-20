@@ -2,8 +2,8 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "name": "awesome-codex-plugins",
   "version": "1.0.0",
-  "last_updated": "2026-09-18",
-  "total": 227,
+  "last_updated": "2026-09-20",
+  "total": 229,
   "categories": [
     "Development & Workflow",
     "Tools & Integrations"
@@ -720,6 +720,16 @@
       "install_url": "https://raw.githubusercontent.com/yimwoo/hotl-plugin/HEAD/.codex-plugin/plugin.json"
     },
     {
+      "name": "jev-use",
+      "url": "https://github.com/shitianfang/jev-use",
+      "owner": "shitianfang",
+      "repo": "jev-use",
+      "description": "Hands the steps of a Codex session that produce no text — is the build done, which of these elements do I click, is this shell command safe — to Jev, TypeSafe AI's judgment model, with a PreToolUse command gate and typed escalation back to the model for anything it cannot decide.",
+      "category": "Development & Workflow",
+      "source": "awesome-codex-plugins",
+      "install_url": "https://raw.githubusercontent.com/shitianfang/jev-use/HEAD/.codex-plugin/plugin.json"
+    },
+    {
       "name": "Kernel",
       "url": "https://github.com/ariaxhan/kernel-claude",
       "owner": "ariaxhan",
@@ -918,6 +928,16 @@
       "category": "Development & Workflow",
       "source": "awesome-codex-plugins",
       "install_url": "https://raw.githubusercontent.com/RBraga01/Quality-Engineering-Skills/HEAD/.codex-plugin/plugin.json"
+    },
+    {
+      "name": "Quiver",
+      "url": "https://github.com/yagizdo/quiver",
+      "owner": "yagizdo",
+      "repo": "quiver",
+      "description": "21 development lifecycle skills and 20 review and debug agents for Codex, Claude Code, Cursor, and OpenCode, where every step writes its output to disk instead of leaving it in the chat.",
+      "category": "Development & Workflow",
+      "source": "awesome-codex-plugins",
+      "install_url": "https://raw.githubusercontent.com/yagizdo/quiver/HEAD/.codex-plugin/plugin.json"
     },
     {
       "name": "RAG Reviewer",

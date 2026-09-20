@@ -1,7 +1,10 @@
 {
   "name": "@yylo/cli",
-  "version": "0.2.5",
+  "version": "0.2.7",
   "description": "YYLO (why-lo): task-driven AI subagent orchestration.",
+  "yyloControllerGeneration": {
+    "ordinaryDispatch": "explicit-only-v1"
+  },
   "keywords": [
     "Ralph",
     "Ralph Wiggum",
@@ -164,6 +167,6 @@
     "version": "0.1.1"
   },
   "yyloLedger": {
-    "version": "0.3.1"
+    "version": "0.3.2"
   }
 }
