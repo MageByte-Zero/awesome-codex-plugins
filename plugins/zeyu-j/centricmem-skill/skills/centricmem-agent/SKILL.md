@@ -1,15 +1,15 @@
 ---
 name: centricmem-agent
-description: "Organises and retrieves Markdown memory on the hosted CentricMem librarian (search, notes, decisions, transcripts). Use when starting a session, resuming after context compress / checkpoint / new chat, filing Non-Micro work, searching project memory, connecting an agent key, or refreshing this Skill."
+description: "Organises and retrieves Markdown memory on the hosted CentricMem librarian (search, notes, decisions, transcripts). Use when starting a session, resuming after context compress / checkpoint / new chat, filing Non-Micro work, searching project memory, connecting an agent key, or refreshing this Skill. On session start, compare the loaded copy (see REFERENCE Skill refresh) against cm_health / ambient skill_latest and refresh if stale."
 license: PolyForm-Noncommercial-1.0.0
 compatibility: "Requires host MCP at https://mem.centricmem.com/mcp. CLI >=0.21.50: every card is summary + key points (a keep stub is not a card); a folder is cm_keep card:false then cm_import items. Archive zip is optional. share: shelf ids; cm_move selected cards (whole paths, not lessons.md or #); cm_delete {file,shelf} a card (heading= for ##); cm_rename {file,shelf,title} a card. Omit cm_library id to list. Codex OAuth needs librarian >=0.21.51. OAuth key picker / ChatGPT Approve hop: librarian >=0.21.56. Applicant HTTPS callbacks: librarian >=0.21.55. skipExisting / copy-aside FTS skip need librarian >=0.21.50."
 metadata:
-  version: "0.21.86"
+  version: "0.21.89"
   compatible_cli: ">=0.21.50"
   changelog_url: https://github.com/zeyu-j/centricmem-skill/blob/main/CHANGELOG.md
 ---
 
-# CentricMem Agent Skill v0.21.86
+# CentricMem Agent Skill v0.21.89
 
 Handover (when / loop). Schemas win. Branches: [REFERENCE.md](REFERENCE.md).
 **Library** → **Shelf** → **Card** (summary + key points). No Inbox / `unclassified`. One key = grants. Never paste keys in chat (REFERENCE **Bearer: where plaintext is OK vs not** — claim may write a private local MCP file; docs/plans use `${VAR}` or URL-only).
@@ -67,6 +67,14 @@ MCP down: hold **CentricMem deferred sweep**; connect (REFERENCE); file after he
 1. Transcript plaintext exists → Shell-read → `cm_keep` (no paste / `path=`). Else skip keep.
 2. Same batch: `cm_note` / `cm_log_decision` / `cm_done` (+ `attach`) as needed.
 3. Copy/move/delete/rename leftovers: REFERENCE Writes.
+
+## 5. Optional host hooks
+
+**Baseline = this Skill + host MCP (`cm_*`).** Hooks / `AGENTS.md` / Stop scripts are **optional enhancements**, not install prerequisites.
+
+- No hook support (DSH, some cloud agents) → still full use: §2 ambient, §4 sweep. Missing hooks is not an error.
+- This Skill does **not** require hook config; hooks do **not** replace §4 (scripts default to session-only; knowledge cards still need the model + this Skill).
+- Install recipes (private client `integrations/`): L1 `AGENTS.md` snippet, L2 Stop remind (Cursor / Claude / Codex), L3 session-sweep (guest HTTP Bearer). Details: REFERENCE **Optional host hooks**.
 
 ## Typical Workflows
 

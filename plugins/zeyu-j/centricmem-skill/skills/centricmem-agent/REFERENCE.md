@@ -304,17 +304,28 @@ Hard rules:
 - Top-level `items=` (or `package.items`, or a `bundle` that is **only** `{items:[…]}` with **no** `version`) is **always** the daily-card path. Putting `rel_path` on an `items[]` row does **not** retarget corpus files — you still get `imported/kept/…`.
 - To refresh a card that already lives at `imported/academic/…` or any known relative path: use **`bundle.version: 1`** + **`imported[]`** with that **`rel_path`** (and stable `external_id` when you have one). Prefer `dryRun: true` first.
 - **`bundle` string = JSON text**, not a filesystem path. Large bundles: the client reads the file and passes the object/string (no host `bundleFile` / `path=`).
-- **Counts:** `imported` = newly created under `imported/`; `updated` = same path or known `external_id` overwritten (dry-run uses the same rule). `files[]` lists `{file, action: created|updated|skipped}`. Do not treat `imported:N` alone as “N duplicate cards.”
-- **`rel_path` vs `file=`:** import `rel_path` is under `imported/` (omit the `imported/` prefix). `cm_show` / delete / rename `file=` is shelf-root relative — prefer `imported/…`. If you pass the bare `rel_path` and only `imported/<rel_path>` exists, show remaps automatically.
-- **`agent` on `imported[]`:** optional writer stamp (`logged_by`); default `migration`. Avoids FTS `agent=unknown`.
-- After host `cm_import`, FTS is updated automatically. Call **`cm_index`** when the index may be dirty, after bulk rebuild, or after local-junction sync stories — not every apply.
+- **Counts:** `imported` = newly created under `imported/`; `updated` = same path or known `external_id` whose **content changed**; `unchanged` = same path rewritten with identical body (timestamp-only stamp differences do not count as updated). `files[]` lists `{file, action: created|updated|unchanged|skipped}`. Do not treat `imported:N` alone as “N duplicate cards.”
+- **`rel_path` vs `file=`:** import `rel_path` is under `imported/` (omit the `imported/` prefix). `cm_show` / delete / rename `file=` is shelf-root relative — prefer `imported/…`. If you pass the bare `rel_path` and only `imported/<rel_path>` exists, show remaps automatically. Both forms work for show.
+- **`agent` on `imported[]`:** optional writer stamp (`logged_by`). When omitted, host import uses the request writer (`X-CentricMem-Writer` / MCP writer, typically `mcp`), not a blank stamp. Local CLI import without a writer still defaults to `migration`. Avoids FTS `agent=unknown`.
+- After host `cm_import`, FTS is updated automatically. Call **`cm_index`** (or guest CLI `centricmem index` with the same Bearer as import) when the index may be dirty, after bulk rebuild, or after local-junction sync stories — not every apply.
 - If you already created stray `imported/kept/` duplicates by mistake: `cm_delete` those paths; do not “fix” them into the corpus path with another `items=` call.
+
+### Search fields
+
+- **`workSiblings`:** when results share a bibliographic `work` id, search keeps the best hit and sets `workSiblings` to how many **other** cards with that work appeared in **this** result set (before collapse). It is `0` when only one card for that work matched. It is **not** the total card count for the work on the shelf, and it **changes with `limit` / query** because only cards that made it into the ranked window are counted.
+
+### Direct HTTP `/mcp`
+
+Scripts and custom clients that POST to `https://mem.centricmem.com/mcp` (outside Cursor / Claude / Codex MCP clients) **must** send a non-empty **`User-Agent`** header.
+
+- Missing or empty User-Agent → Cloudflare **403 error-1010** (“browser signature”). Python `urllib` / many HTTP libs send none by default; set e.g. `User-Agent: centricmem-script/1.0` (any non-empty string works). `curl` usually already sends one.
+- Successful MCP JSON responses use `Content-Type: application/json; charset=utf-8` so clients that default to ISO-8859-1 (e.g. PowerShell `Invoke-WebRequest`) do not mojibake CJK card text.
 
 ### Hosted shelf ≠ local disk / junction
 
 Guest MCP (`cm_show` / `cm_search` / `cm_import`) talks to the **hosted librarian**, not to a folder on this machine. Editing a local markdown tree (including a Windows **junction** into a hub’s `imported/academic`) does **not** change what `cm_show` returns or what FTS indexes. After local edits meant for the hosted shelf: write back with the correct import shape above (`cm_import`); use `cm_index` only if FTS looks stale. Do not treat “I saved the file locally” as filed.
 
-Guest **CLI** does not write leftover `CENTRICMEM_HOME`. `centricmem import` / `index` on a guest machine POST to the librarian when `CENTRICMEM_TOKEN` (or a claimed mcp.json Bearer) is set; otherwise use `cm_import` on host MCP. `doctor` “token failed” for CLI does not mean MCP is broken.
+Guest **CLI** does not write leftover `CENTRICMEM_HOME`. `centricmem import` / `index` on a guest machine POST to the librarian when `CENTRICMEM_TOKEN` (or a claimed mcp.json Bearer) is set; otherwise use `cm_import` on host MCP. `doctor` shows token source (`CENTRICMEM_TOKEN` / mcp.json / catalog); “token failed” for CLI does not mean MCP is broken.
 
 `Curate: today_sessions` counts session files whose names start with today’s **UTC** date (`YYYY-MM-DD`).
 ## Skill refresh (once per chat)
@@ -323,16 +334,20 @@ Guests install from GitHub, not from the librarian disk. `cm_health` `min_skill`
 
 **Refresh path ≠ load path (hosts differ).** `npx skills add … -g` writes `~/.agents/skills/centricmem-agent/` (and Cursor often mirrors `~/.cursor/skills/`). That does **not** update every host’s loaded copy. **Reasonix** loads the **plugin** tree (Windows: `%APPDATA%\reasonix\plugins\centricmem-skill\skills\centricmem-agent\`). Same skill name in both places → two versions on disk; Reasonix may warn and prefer the plugin copy. Updating only via npx/`~/.agents` leaves Reasonix on the old plugin version — that is expected, not a broken `skill_latest` signal.
 
-1. Read `version` from this Skill’s frontmatter (`metadata.version`).
+1. Read the **loaded** copy’s version — not a sibling skills dir you are not running:
+   - Cursor / agents skills: this Skill’s frontmatter `metadata.version` (the file under the skills root this host loads).
+   - **Reasonix:** `%APPDATA%\reasonix\plugins\centricmem-skill\package.json` `version` (macOS/Linux: under Reasonix’s plugins dir). Prefer that over `~/.agents` / `~/.cursor`; those are a different install tree.
 2. `latest` = JSON `skill_latest` if present, else `metadata.version` at `https://raw.githubusercontent.com/zeyu-j/centricmem-skill/main/skills/centricmem-agent/SKILL.md`.
-3. If `latest` is newer and the shell works: refresh **the copy this agent actually loads**, not only `~/.agents`:
+3. If `latest` is newer: refresh **the copy this agent actually loads**, not only `~/.agents`:
    - **Cursor / agents skills dir:** if Node/npm exist, `npx --yes skills add zeyu-j/centricmem-skill --skill centricmem-agent -g -y` (omit `-g` when this agent has no user-wide skills dir).
-   - **Reasonix (plugin install):** update the **whole** plugin package — re-add/reinstall `zeyu-j/centricmem-skill` in Reasonix’s plugin UI, or replace `%APPDATA%\reasonix\plugins\centricmem-skill\` (macOS/Linux: under Reasonix’s plugins dir) from GitHub so `package.json` / `plugin.json` / `install.json` / `CHANGELOG.md` **and** `skills/centricmem-agent/SKILL.md` all match `skill_latest`. Copying only `SKILL.md` leaves package metadata on the old version. Do **not** assume npx `-g` fixed Reasonix.
+   - **Reasonix (plugin install, agent-executable):** host tool `install_source` with a **full URL** — `source: "https://github.com/zeyu-j/centricmem-skill"`, `kind: "plugin"`. Slug-only (`zeyu-j/centricmem-skill` / `centricmem-skill`) is rejected. Call once with `apply: false` (inspect plan, `riskLevel`, resolved commit / target under `%APPDATA%\reasonix\plugins\centricmem-skill`), then again with `apply: true` + the returned `planId`. Fallback if that tool is missing: re-add/reinstall in Reasonix’s plugin UI, or replace the whole plugin directory from GitHub so `package.json` / `plugin.json` / `install.json` / `CHANGELOG.md` **and** `skills/centricmem-agent/SKILL.md` all match `skill_latest`. Copying only `SKILL.md` leaves package metadata on the old version. Do **not** assume npx `-g` fixed Reasonix.
    - **No Node / no npm:** do not invent a CLI install — update via this client’s **plugin UI**, or copy `skills/centricmem-agent/` from `https://github.com/zeyu-j/centricmem-skill` into `<skills-root>/centricmem-agent`.
    - **DSH:** never that npx (and never `-g`); copy into `$DSH_HOME/skills/centricmem-agent` with `dsh/copy-skill.mjs`, or `dsh plugin` re-add the pinned tag then copy-skill again. Bare npx without `-g` writes `<cwd>/.agents/skills` — skip that in DSH.
-   - If the shell is blocked, skip npx; tell them to update via this client’s plugin UI. If this session is a **plugin** install, also update via that client (`/plugin`, Codex plugins UI, Copilot plugin, Kiro Powers re-import, `hermes skills install zeyu-j/centricmem-skill/skills/centricmem-agent`, `pi update --extensions`, re-install `openclaw plugins install git:github.com/zeyu-j/centricmem-skill`).
+   - If the shell is blocked and no host install tool exists, skip npx; tell them to update via this client’s plugin UI. If this session is a **plugin** install, also update via that client (`/plugin`, Codex plugins UI, Copilot plugin, Kiro Powers re-import, `hermes skills install zeyu-j/centricmem-skill/skills/centricmem-agent`, `pi update --extensions`, re-install `openclaw plugins install git:github.com/zeyu-j/centricmem-skill`).
    - Say once: on disk now; this chat still uses the loaded copy. If two copies exist, say which path this host loads.
-4. If this file is newer, or the fetch/npx fails or is blocked: continue. Do not `setup --install-skill`.
+4. If this file is newer, or the fetch/npx/`install_source` fails or is blocked: continue. Do not `setup --install-skill`.
+
+**Limits (what “auto” means).** The agent may detect a stale loaded copy, run the host refresh path above (`npx` / `install_source` plan+apply / documented client install), and tell the human to **restart** the host (or open a new chat) so the new Skill loads. The agent must **not** silently rewrite host install directories outside those tools, and cannot restart Reasonix (or other hosts) for them. Until restart/new chat, this session still uses the already-loaded Skill body.
 
 ## Writes (card shapes; trigger is SKILL §4)
 
@@ -364,6 +379,36 @@ Do not send `path=` for the librarian to open a server file. Mention `#NNNN` in 
 Cursor already writes `~/.cursor/projects/<workspace>/agent-transcripts/<uuid>/<uuid>.jsonl`. Shell-read it; never paste jsonl; never delete that local file.
 
 Claude Code, Codex, Hermes, Pi, OpenClaw, Kiro, Kilo, Copilot, and other Agent Skills clients: only keep a transcript if that runtime actually wrote a local **plaintext** file for **this** chat. If there is no file, say so; do not invent a dump. Never paste the bytes into chat. DSH stores `session.v3.jsonl.zstd` (compressed) — that is not a keep source; skip `cm_keep` and still file note / decision / done.
+
+## Optional host hooks
+
+**Weak coupling.** CentricMem’s product path is always this Skill + host MCP. Host lifecycle hooks (`AGENTS.md`, Stop remind, session-sweep scripts) are **optional**. Agents without hooks (DSH, some cloud hosts) still use §4 + `cm_*` fully — missing hooks must not block install or filing.
+
+| Layer | Required? | Role |
+| --- | --- | --- |
+| Skill + MCP (`cm_*`) | **Yes (baseline)** | Model files via Skill §4 |
+| L1 `AGENTS.md` / user rule | Optional | One-line gate when Skill is not loaded |
+| L2 Stop remind | Optional | Nudge model to call `cm_*` on close |
+| L3 session-sweep script | Optional | True auto; **session card only** via guest HTTP Bearer |
+| L4 cron / launchd | Optional later | Daily backlog |
+
+Private client recipes live under `skills/centricmem-agent/integrations/` (not shipped in the public Skill repo):
+
+| Recipe | Layer |
+| --- | --- |
+| `agents-md.snippet.md` | L1 |
+| `cursor-hooks.json` + `hooks/remind-stop.mjs` + `hooks/mark-cm-write.mjs` | L2 (Cursor) |
+| `claude-code-settings.snippet.json` / `codex-hooks.json` | L2 |
+| `reasonix-settings.snippet.json` + `hooks/session-sweep.mjs` | L3 (Reasonix Stop is observation-only — cannot force another model turn; use script) |
+| `reasonix-hooks.json` | L3 Claude-shaped plugin hooks (if the host loads them) |
+
+Rules:
+
+- Do **not** install guest hooks that run `centricmem log-session` / CLI writes against a leftover `CENTRICMEM_HOME` hub.
+- L3 requires `CENTRICMEM_TOKEN` (or claimed MCP Bearer usable by CLI) and `centricmem` on PATH; skip on Cloud Agent workers without Bearer.
+- L3 never auto-writes note/decision; knowledge cards stay Skill + model.
+- Public install stays Skill-first (`npx skills add zeyu-j/centricmem-skill …`). Opening hooks is optional copy from the private client or a trusted operator machine.
+- **Reasonix plugin sync:** prefer `install_source` with full URL `https://github.com/zeyu-j/centricmem-skill` (`kind: plugin`, dry-run then apply) so the **whole** plugin package matches `skill_latest` — not only `SKILL.md`, and never assume `~/.agents` is what Reasonix loads. Plugin hooks are optional and separate from Skill text.
 
 ## Do not
 

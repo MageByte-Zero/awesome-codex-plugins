@@ -64,7 +64,7 @@ const { answers } = await jev.judge(state, {
   risk: rate("How risky?", ["routine", "worth a look", "incident"]),
   passed: check("Did the run fully succeed?"),
 });
-// answers.next → { answer: "merge", confidence: 0.93, escalate: false }
+// answers.next → { answer: "merge", confidence: 0.93, confidenceFrom: "reported", escalate: false }
 ```
 
 Anything Jev can't or shouldn't decide comes back with `escalate: true`

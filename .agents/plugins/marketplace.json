@@ -2607,6 +2607,21 @@
       "icon": "./plugins/avivsinai/jenkins-cli/assets/jk-icon.svg"
     },
     {
+      "name": "jev-social",
+      "displayName": "Jev Social",
+      "source": {
+        "source": "local",
+        "path": "./plugins/socai-io/jev-social"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Tools & Integrations",
+      "description": "Read-only Instagram, TikTok, and LinkedIn research in the user's local browser, with Jev selecting bounded operations and the socai CLI returning source-linked evidence and reports.",
+      "icon": "./plugins/socai-io/jev-social/assets/icon.svg"
+    },
+    {
       "name": "kachilu-browser",
       "displayName": "Kachilu Browser",
       "source": {

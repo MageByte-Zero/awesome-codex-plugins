@@ -47,6 +47,10 @@ Then keep talking. After install, if `cm_*` tools are missing this agent (and ea
 
 Hosted librarian: [centricmem.com](https://centricmem.com). Sign up is open. Host MCP: `https://mem.centricmem.com/mcp`. Never paste keys in chat.
 
+**Baseline = Skill + host MCP.** Reasonix: refresh the loaded plugin with host tool `install_source` (full URL `https://github.com/zeyu-j/centricmem-skill`, `kind: plugin`; see Skill REFERENCE). Lifecycle hooks (`AGENTS.md`, Stop remind, session-sweep scripts) are **optional** — agents without hooks (e.g. DSH) still file via Skill §4. Opening optional hooks is not part of public install; see Skill `REFERENCE.md` → Optional host hooks.
+
+**Direct HTTP scripts** (not an MCP client): every request to `/mcp` **must** include a non-empty `User-Agent` header, or Cloudflare returns 403 error-1010. Example: `-H "User-Agent: centricmem-script/1.0"`. See Skill `REFERENCE.md` → Direct HTTP `/mcp`.
+
 ## How you use it
 
 1. Keep talking where you already work. The agent’s own memories stay on. It says **once** which key this chat is using. Extra grants: tick shelves on **Keys**. Default opens every shelf.
