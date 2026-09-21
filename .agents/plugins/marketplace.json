@@ -1427,6 +1427,21 @@
       "icon": "./plugins/RooAGI/red-green-proof/assets/icon.svg"
     },
     {
+      "name": "account-video-downloader",
+      "displayName": "Redfox Agent Plugins",
+      "source": {
+        "source": "local",
+        "path": "./plugins/redfox-data/redfox-agent-plugins"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Development & Workflow",
+      "description": "Ten cross-platform agent skills (video download, transcripts, image gen, trend search) installable on Claude Code, Codex, Cursor, and Gemini CLI from a single repo.",
+      "icon": "./plugins/redfox-data/redfox-agent-plugins/assets/logo.png"
+    },
+    {
       "name": "registry-broker-codex-plugin",
       "displayName": "Registry Broker",
       "source": {

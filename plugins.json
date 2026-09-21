@@ -3,7 +3,7 @@
   "name": "awesome-codex-plugins",
   "version": "1.0.0",
   "last_updated": "2026-09-21",
-  "total": 231,
+  "total": 232,
   "categories": [
     "Development & Workflow",
     "Tools & Integrations"
@@ -968,6 +968,16 @@
       "category": "Development & Workflow",
       "source": "awesome-codex-plugins",
       "install_url": "https://raw.githubusercontent.com/RooAGI/red-green-proof/HEAD/plugins/red-green-proof/.codex-plugin/plugin.json"
+    },
+    {
+      "name": "Redfox Agent Plugins",
+      "url": "https://github.com/redfox-data/redfox-agent-plugins",
+      "owner": "redfox-data",
+      "repo": "redfox-agent-plugins",
+      "description": "Ten cross-platform agent skills (video download, transcripts, image gen, trend search) installable on Claude Code, Codex, Cursor, and Gemini CLI from a single repo.",
+      "category": "Development & Workflow",
+      "source": "awesome-codex-plugins",
+      "install_url": "https://raw.githubusercontent.com/redfox-data/redfox-agent-plugins/HEAD/plugins/account-video-downloader/.codex-plugin/plugin.json"
     },
     {
       "name": "Registry Broker",
