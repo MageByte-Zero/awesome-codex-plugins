@@ -3,7 +3,7 @@
   "name": "awesome-codex-plugins",
   "version": "1.0.0",
   "last_updated": "2026-09-21",
-  "total": 232,
+  "total": 233,
   "categories": [
     "Development & Workflow",
     "Tools & Integrations"
@@ -1608,6 +1608,16 @@
       "category": "Tools & Integrations",
       "source": "awesome-codex-plugins",
       "install_url": "https://raw.githubusercontent.com/douglasmonsky/codex-usage-tracker/HEAD/.codex-plugin/plugin.json"
+    },
+    {
+      "name": "Command Code Usage",
+      "url": "https://github.com/Jovan1666/commandcode-usage",
+      "owner": "Jovan1666",
+      "repo": "commandcode-usage",
+      "description": "Show your Command Code plan usage inside Codex: a per-turn quota line, plus a /quota command for the full panel.",
+      "category": "Tools & Integrations",
+      "source": "awesome-codex-plugins",
+      "install_url": "https://raw.githubusercontent.com/Jovan1666/commandcode-usage/HEAD/plugins/codex/.codex-plugin/plugin.json"
     },
     {
       "name": "Computer Usage Summary",

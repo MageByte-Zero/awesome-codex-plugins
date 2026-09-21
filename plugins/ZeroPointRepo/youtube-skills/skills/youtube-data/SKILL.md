@@ -1,7 +1,7 @@
 ---
 name: youtube-data
 description: "Use when structured YouTube data is needed: pasted video/channel/playlist links, transcripts for analysis, video metadata, channel upload history, search results, or playlist contents — without Google API quotas or OAuth. Triggers on YouTube URLs, creator names, topic research, or any request needing YouTube content, even if not mentioned explicitly. Not for uploads, account management, or written-source-only research."
-version: "1.6.0"
+version: "1.6.2"
 user-invocable: true
 compatibility: Requires internet access to reach transcriptapi.com. No additional runtimes or dependencies needed.
 required_environment_variables:
@@ -121,9 +121,20 @@ Returns: `channel` info, `results` array with `videoId`, `title`, `published` (I
 GET https://transcriptapi.com/api/v2/youtube/channel/videos?channel=@NASA&tab=videos
 Authorization: Bearer $TRANSCRIPT_API_KEY
 User-Agent: YourAgent/1.0
+
+# Most-viewed first (channel Videos tab, ~30 per page)
+GET https://transcriptapi.com/api/v2/youtube/channel/videos?channel=@NASA&sort=popular
+Authorization: Bearer $TRANSCRIPT_API_KEY
+User-Agent: YourAgent/1.0
 ```
 
-Returns 100 videos per page + `continuation_token` for pagination. `tab` also accepts `shorts` or `streams` — repeat the same `tab` when paginating.
+Returns ~100 videos per page + `continuation_token` for pagination. `tab` also accepts `shorts` or `streams`, and you repeat the same `tab` when paginating.
+
+**Sorting.** Add sort=latest, popular, or oldest to channel/videos to get a channel's videos in the order you want, for example its most-popular uploads first. A sorted page returns about 30 videos (an unsorted page returns about 100), and every page costs the same 1 credit.
+
+When paging, send the same sort on each request.
+
+**Item fields.** Every item carries `members_only`, `true` only when YouTube badges it "Members only", and those items have no `viewCountText`. `tab=streams` items carry `lengthText` and `publishedTimeText` (for example `Streamed 2 years ago`); `tab=shorts` returns `null` for both, because YouTube's Shorts grid publishes neither. On the channel-tab feeds (`tab=videos` with `sort`, `tab=shorts`, `tab=streams`) `channelId`, `channelTitle`, `channelHandle` and `index` are `null`.
 
 **Search within channel (1 credit):**
 
@@ -196,7 +207,7 @@ Returns: `results` (videos), `playlist_info` (`title`, `numVideos`, `ownerName`,
 | channel/resolve   | **free** | Channel ID mapping              |
 | channel/info      | 1        | Channel profile                 |
 | channel/latest    | **free** | 15 videos + exact stats         |
-| channel/videos    | 1/page   | 100 videos per page (any tab)   |
+| channel/videos    | 1/page   | ~100/page unsorted, ~30/page sorted |
 | channel/search    | 1        | Videos matching query           |
 | channel/playlists | 1/page   | Channel's playlists             |
 | channel/posts     | 1/page   | Community tab content           |
