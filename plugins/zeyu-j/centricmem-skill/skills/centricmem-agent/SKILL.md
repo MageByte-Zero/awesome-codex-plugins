@@ -4,16 +4,24 @@ description: "Organises and retrieves Markdown memory on the hosted CentricMem l
 license: PolyForm-Noncommercial-1.0.0
 compatibility: "Requires host MCP at https://mem.centricmem.com/mcp. CLI >=0.21.50: every card is summary + key points (a keep stub is not a card); a folder is cm_keep card:false then cm_import items. Archive zip is optional. share: shelf ids; cm_move selected cards (whole paths, not lessons.md or #); cm_delete {file,shelf} a card (heading= for ##); cm_rename {file,shelf,title} a card. Omit cm_library id to list. Codex OAuth needs librarian >=0.21.51. OAuth key picker / ChatGPT Approve hop: librarian >=0.21.56. Applicant HTTPS callbacks: librarian >=0.21.55. skipExisting / copy-aside FTS skip need librarian >=0.21.50."
 metadata:
-  version: "0.21.89"
+  version: "0.21.90"
   compatible_cli: ">=0.21.50"
   changelog_url: https://github.com/zeyu-j/centricmem-skill/blob/main/CHANGELOG.md
 ---
 
-# CentricMem Agent Skill v0.21.89
+# CentricMem Agent Skill v0.21.90
 
 Handover (when / loop). Schemas win. Branches: [REFERENCE.md](REFERENCE.md).
 **Library** → **Shelf** → **Card** (summary + key points). No Inbox / `unclassified`. One key = grants. Never paste keys in chat (REFERENCE **Bearer: where plaintext is OK vs not** — claim may write a private local MCP file; docs/plans use `${VAR}` or URL-only).
 **Style** of a card (voice, length, evidence density) is yours + this agent's — not a CentricMem house voice. Structure only: REFERENCE **Card contract**.
+
+## Do not (full list: REFERENCE)
+
+- Don't wait for "log this" / close / wrap up to file a finished chunk — sweep before you yield (§4)
+- Don't write `unclassified` — pick or create a named shelf
+- Don't put secrets / keys in cards, and never ask the human to paste a key or transcript in chat
+- Don't stop after a title-only card — every card needs summary + key points
+- Don't treat this git checkout as the memory disk
 
 ## When to Use
 
@@ -38,7 +46,7 @@ Prefer `cm_ambient` with **`shelf=`** (or `library=`) first — it already carri
 
 **Resume = new session.** Compress, checkpoint restore, or new chat on same task → ambient first (health only if needed).
 
-Once after ambient (or health): refresh if `skill_latest` newer (REFERENCE Skill refresh — refresh the copy **this host loads**; npx `-g` does not update Reasonix’s plugin tree). Name the key once (`mode=read` → view-only). Don't log → skip sweep. Empty shelf once: REFERENCE Existing memory.
+Once after ambient (or health): refresh if `skill_latest` newer. **Load path ≠ refresh path** — read the version of the copy **this host loads**, not a sibling skills dir (Reasonix: `%APPDATA%\reasonix\plugins\centricmem-skill\package.json`; npx `-g` / `~/.agents` does not update that tree). After a disk refresh: **re-read this SKILL.md and Do not** before the next write — installing newer ≠ acting on it. REFERENCE Skill refresh. Name the key once (`mode=read` → view-only). Don't log → skip sweep. Empty shelf once: REFERENCE Existing memory.
 
 ## 3. During
 

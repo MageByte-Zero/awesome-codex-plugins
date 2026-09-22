@@ -312,6 +312,7 @@ Hard rules:
 
 ### Search fields
 
+- **`q` (not `query`):** `cm_search` takes **`q`**. Passing `query=` returns `Provide q, tags, or a type:/#id prefix.`
 - **`workSiblings`:** when results share a bibliographic `work` id, search keeps the best hit and sets `workSiblings` to how many **other** cards with that work appeared in **this** result set (before collapse). It is `0` when only one card for that work matched. It is **not** the total card count for the work on the shelf, and it **changes with `limit` / query** because only cards that made it into the ranked window are counted.
 
 ### Direct HTTP `/mcp`
@@ -332,7 +333,17 @@ Guest **CLI** does not write leftover `CENTRICMEM_HOME`. `centricmem import` / `
 
 Guests install from GitHub, not from the librarian disk. `cm_health` `min_skill` is the HTTP floor. `skill_latest` is the published Skill (env `CENTRICMEM_SKILL_LATEST` on the librarian) — it is **never** the hub’s `skills/centricmem-agent/SKILL.md`. Host `cm_doctor` `skill_status` is the same hub copy; ignore outdated/missing there.
 
-**Refresh path ≠ load path (hosts differ).** `npx skills add … -g` writes `~/.agents/skills/centricmem-agent/` (and Cursor often mirrors `~/.cursor/skills/`). That does **not** update every host’s loaded copy. **Reasonix** loads the **plugin** tree (Windows: `%APPDATA%\reasonix\plugins\centricmem-skill\skills\centricmem-agent\`). Same skill name in both places → two versions on disk; Reasonix may warn and prefer the plugin copy. Updating only via npx/`~/.agents` leaves Reasonix on the old plugin version — that is expected, not a broken `skill_latest` signal.
+**Refresh path ≠ load path (hosts differ).** `npx skills add … -g` writes `~/.agents/skills/centricmem-agent/` (and Cursor often mirrors `~/.cursor/skills/`). That does **not** update every host’s loaded copy. **Reasonix** loads the **plugin** tree (Windows: `%APPDATA%\reasonix\plugins\centricmem-skill\skills\centricmem-agent\`). Same skill name in both places → two versions on disk; Reasonix may warn and prefer the plugin copy. Updating only via npx/`~/.agents` leaves Reasonix on the old plugin version — that is expected, not a broken `skill_latest` signal. Leftover git checkouts (e.g. `~/centricmem/skills/centricmem-agent`) are **not** a load path — ignore them when reporting the live version.
+
+**Inventory (optional).** Before declaring “updated,” list sibling copies and name which path **this** host loads:
+
+```powershell
+Get-ChildItem $env:USERPROFILE -Recurse -Directory -Filter centricmem-agent -Depth 5 |
+  ForEach-Object { $f = Join-Path $_.FullName SKILL.md
+    if (Test-Path $f) {
+      "{0,-58} {1,-12} {2}" -f $_.FullName, `
+        (Select-String $f -Pattern 'version:' | Select-Object -First 1).Line.Trim(), $_.LinkType } }
+```
 
 1. Read the **loaded** copy’s version — not a sibling skills dir you are not running:
    - Cursor / agents skills: this Skill’s frontmatter `metadata.version` (the file under the skills root this host loads).
@@ -340,11 +351,12 @@ Guests install from GitHub, not from the librarian disk. `cm_health` `min_skill`
 2. `latest` = JSON `skill_latest` if present, else `metadata.version` at `https://raw.githubusercontent.com/zeyu-j/centricmem-skill/main/skills/centricmem-agent/SKILL.md`.
 3. If `latest` is newer: refresh **the copy this agent actually loads**, not only `~/.agents`:
    - **Cursor / agents skills dir:** if Node/npm exist, `npx --yes skills add zeyu-j/centricmem-skill --skill centricmem-agent -g -y` (omit `-g` when this agent has no user-wide skills dir).
-   - **Reasonix (plugin install, agent-executable):** host tool `install_source` with a **full URL** — `source: "https://github.com/zeyu-j/centricmem-skill"`, `kind: "plugin"`. Slug-only (`zeyu-j/centricmem-skill` / `centricmem-skill`) is rejected. Call once with `apply: false` (inspect plan, `riskLevel`, resolved commit / target under `%APPDATA%\reasonix\plugins\centricmem-skill`), then again with `apply: true` + the returned `planId`. Fallback if that tool is missing: re-add/reinstall in Reasonix’s plugin UI, or replace the whole plugin directory from GitHub so `package.json` / `plugin.json` / `install.json` / `CHANGELOG.md` **and** `skills/centricmem-agent/SKILL.md` all match `skill_latest`. Copying only `SKILL.md` leaves package metadata on the old version. Do **not** assume npx `-g` fixed Reasonix.
+   - **Reasonix (plugin install, agent-executable):** host tool `install_source` with a **full URL** — `source: "https://github.com/zeyu-j/centricmem-skill"`, `kind: "plugin"`. Slug-only (`zeyu-j/centricmem-skill` / `centricmem-skill`) is rejected. Call once with `apply: false` (inspect plan, `riskLevel`, resolved commit / target under `%APPDATA%\reasonix\plugins\centricmem-skill`), then again with `apply: true` + the returned `planId`. **While Reasonix is running, `install_source` with `replace: true` often fails** (`Access is denied` on rename of the plugin directory) — the host holds directory rename/delete; **file-level overwrites still succeed**. Fallback: copy the repo files **in place** (no rename of the plugin folder), or re-add/reinstall in Reasonix’s plugin UI after quitting the host, so `package.json` / `plugin.json` / `install.json` / `CHANGELOG.md` **and** `skills/centricmem-agent/SKILL.md` all match `skill_latest`. After an in-place overwrite, also sync `%APPDATA%\reasonix\plugin-packages.json` `version` / `commit` to the new `package.json` (registration is not updated by file copy alone). Copying only `SKILL.md` leaves package metadata on the old version. Do **not** assume npx `-g` fixed Reasonix. The agent cannot restart its own host.
    - **No Node / no npm:** do not invent a CLI install — update via this client’s **plugin UI**, or copy `skills/centricmem-agent/` from `https://github.com/zeyu-j/centricmem-skill` into `<skills-root>/centricmem-agent`.
    - **DSH:** never that npx (and never `-g`); copy into `$DSH_HOME/skills/centricmem-agent` with `dsh/copy-skill.mjs`, or `dsh plugin` re-add the pinned tag then copy-skill again. Bare npx without `-g` writes `<cwd>/.agents/skills` — skip that in DSH.
    - If the shell is blocked and no host install tool exists, skip npx; tell them to update via this client’s plugin UI. If this session is a **plugin** install, also update via that client (`/plugin`, Codex plugins UI, Copilot plugin, Kiro Powers re-import, `hermes skills install zeyu-j/centricmem-skill/skills/centricmem-agent`, `pi update --extensions`, re-install `openclaw plugins install git:github.com/zeyu-j/centricmem-skill`).
    - Say once: on disk now; this chat still uses the loaded copy. If two copies exist, say which path this host loads.
+   - **Refreshed → re-read this SKILL.md and the Do not list before your next write.** Installing a newer version is not the same as acting on it.
 4. If this file is newer, or the fetch/npx/`install_source` fails or is blocked: continue. Do not `setup --install-skill`.
 
 **Limits (what “auto” means).** The agent may detect a stale loaded copy, run the host refresh path above (`npx` / `install_source` plan+apply / documented client install), and tell the human to **restart** the host (or open a new chat) so the new Skill loads. The agent must **not** silently rewrite host install directories outside those tools, and cannot restart Reasonix (or other hosts) for them. Until restart/new chat, this session still uses the already-loaded Skill body.
