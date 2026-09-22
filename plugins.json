@@ -3,7 +3,7 @@
   "name": "awesome-codex-plugins",
   "version": "1.0.0",
   "last_updated": "2026-09-22",
-  "total": 233,
+  "total": 234,
   "categories": [
     "Development & Workflow",
     "Tools & Integrations"
@@ -558,6 +558,16 @@
       "category": "Development & Workflow",
       "source": "awesome-codex-plugins",
       "install_url": "https://raw.githubusercontent.com/reidemeister94/development-skills/HEAD/.codex-plugin/plugin.json"
+    },
+    {
+      "name": "DevRecap",
+      "url": "https://github.com/jquinteiroo/devrecap",
+      "owner": "jquinteiroo",
+      "repo": "devrecap",
+      "description": "Reconstruct evidence-backed developer work from authorized Codex and Claude history plus read-only Git, then turn it into daily standups, weekly reviews, sprint recaps, and memory reports.",
+      "category": "Development & Workflow",
+      "source": "awesome-codex-plugins",
+      "install_url": "https://raw.githubusercontent.com/jquinteiroo/devrecap/HEAD/.codex-plugin/plugin.json"
     },
     {
       "name": "Ditto",
